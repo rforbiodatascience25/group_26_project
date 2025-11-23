@@ -1,0 +1,338 @@
+---
+title: "TB_R_course"
+format: html
+---
+
+WHO 2025 data on Tuberculosis:
+
+"WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]"
+
+Link:
+
+<https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data#csv_files>
+
+Important: It may look like R only downloaded the data for countries from A to B.
+
+But that is just a visualization thing in order to save memory.
+
+------------------------------------------------------------------------
+
+WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]:
+
+```{r}
+# Retrieve the data directly
+
+#| echo: true
+#| eval: true
+
+TB_data <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex",
+                    show_col_types = FALSE #Hides the annoying "Column specification" message. 
+                    )
+
+# Write the data to disk
+write_csv(x = TB_data, file = "data/TB_data.csv")
+
+TB_data
+```
+
+```{r}
+#summary(TB_data)
+
+```
+
+```{r}
+#Some summary statistics: 
+
+library(dplyr)
+
+TB_data |> 
+  summarise(
+    n_rows = n(),
+    n_countries = n_distinct(country),
+    n_years = n_distinct(year),
+    n_sex_categories = n_distinct(sex),
+    min_year = min(year, na.rm = TRUE),
+    max_year = max(year, na.rm = TRUE),
+    total_cases_best = sum(best, na.rm = TRUE),
+    total_cases_lo = sum(lo, na.rm = TRUE),
+    total_cases_hi = sum(hi, na.rm = TRUE)
+  )
+
+```
+
+```{r}
+#| echo: true
+#| eval: true
+
+unique(TB_data$measure)
+```
+
+```{r}
+#| echo: true
+#| eval: true
+
+unique(TB_data$unit)
+```
+
+Renaming the data:
+
+```{r}
+#| echo: true
+#| eval: true
+
+#Adjusting some of the column names, to make them more intuitive. 
+TB_data <- TB_data |> 
+  rename(
+    country_name = country,
+    iso_code = iso3,
+    TB_cases_best = best,
+    TB_cases_min = lo,
+    TB_cases_max = hi
+  )
+
+```
+
+Note: The age group sometimes contains info like "15plus" instead of e.g. "15-100".
+
+Furthermore:
+
+"Unit = num" and "Measure = inc" means that it is the number of TB incidences that year.
+
+Changing the sex: f, m, a to female, male, both (aggregated)
+
+```{r}
+library(dplyr)
+library(stringr)
+
+#| echo: true
+#| eval: true
+
+#The case_when is used to change the values. 
+#It works as a replace function. 
+
+TB_data <- TB_data |> 
+  mutate( 
+    sex = case_when( 
+      sex == "m" ~ "Male", 
+      sex == "f" ~ "Female", 
+      sex == "a" ~ "Both", 
+      TRUE ~ sex #This line ensures that e.g. "Unknown" remains as "Unknown". 
+    ) 
+  ) 
+
+print(TB_data)
+```
+
+```{r}
+#Sanity/ quality check: 
+print( unique(TB_data$sex) ) 
+#Printing the unique values from the "sex" column
+#It should only return Male, Female and Both. 
+
+```
+
+```{r}
+#Box plot for all countries: 
+
+#| echo: true
+#| eval: true
+
+ggplot(TB_data,
+       aes(y = country_name, x = TB_cases_best)) +
+  geom_boxplot(alpha = 1) +
+  theme(legend.position = "none") +  
+  labs(
+    x = "TB cases",
+    y = "Countries"
+  ) 
+```
+
+```{r}
+#Boxplot of the top 10 countries with most total TB cases: 
+library(dplyr)
+library(ggplot2)
+
+#| echo: true
+#| eval: true
+
+# Compute total cases per country
+top_countries <- TB_data |>
+  group_by(country_name) |>
+  summarise(total_cases = sum(TB_cases_best, na.rm = TRUE)) |>
+  arrange(desc(total_cases)) |>
+  slice_head(n = 10) |>  # top 10 countries
+  pull(country_name)
+
+# Filter the data
+TB_top <- TB_data |> filter(country_name %in% top_countries)
+
+# Boxplot
+ggplot(TB_top, aes(y = country_name, x = TB_cases_best)) +
+  geom_boxplot(alpha = 0.7, fill = "skyblue") +
+  labs(x = "TB cases", y = "Country") +
+  theme_minimal()
+```
+
+```{r}
+
+#| echo: true
+#| eval: true
+
+ggplot(TB_top, aes(y = country_name, x = TB_cases_best)) +
+  geom_boxplot(alpha = 0.7, fill = "salmon") +
+  scale_x_log10() +
+  labs(x = "TB cases (log scale)", y = "Country") +
+  theme_minimal()
+```
+
+```{r}
+#grouping low-incidence countries together: 
+
+TB_data_summary <- TB_data |>
+  group_by(country_name) |>
+  summarise(total_cases = sum(TB_cases_best, na.rm = TRUE)) |>
+  mutate(country_group = if_else(total_cases < 50000, "Other", country_name))
+
+ggplot(TB_data_summary, aes(y = country_group, x = total_cases)) +
+  geom_boxplot() +
+  scale_x_log10()
+
+
+```
+
+------------------------------------------------------------------------
+
+```{r}
+#All countries: 
+# unique(TB_data$country_name)
+
+```
+
+#### Total TB cases per country:
+
+```{r}
+#Getting the total amount of TB cases pr. country: 
+
+#| echo: true
+#| eval: true
+
+TB_cases_by_country <- TB_data |>
+  group_by(country_name) |>
+  summarise(
+    total_cases = sum(TB_cases_best, na.rm = TRUE)
+  )
+
+print(TB_cases_by_country)
+```
+
+Cases in Denmark:
+
+```{r}
+#| echo: true
+#| eval: true
+
+TB_cases_by_country |>
+  filter(country_name == "Denmark")
+```
+
+```{r}
+#Only the numeric value: 
+
+TB_cases_by_country |>
+  filter(country_name == "Denmark") |>
+  pull(total_cases) #pull() allows a specific element from a tibble to be extracted. 
+  
+```
+
+```{r}
+#Getting the total amount of TB cases pr. sex and pr. country: 
+
+#| echo: true
+#| eval: true
+
+TB_cases_by_sex <- TB_data |>
+  group_by(country_name, sex) |> 
+  summarise(
+    total_cases = sum(TB_cases_best, na.rm = TRUE)
+  ) |>
+  ungroup()
+
+print(TB_cases_by_sex)
+
+```
+
+```{r}
+#Box plot for sex-segmented data: 
+
+#| echo: true
+#| eval: true
+
+ggplot(TB_cases_by_sex,
+       aes(y = country_name, x = total_cases)) +
+  geom_boxplot(alpha = 1) +
+  theme(legend.position = "none") +  
+  labs(
+    x = "TB cases",
+    y = "Countries"
+  ) 
+```
+
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+Loading the 3 other datasets:
+
+```{r}
+#| echo: true
+#| eval: true
+
+#WHO TB burden estimates [>1Mb]
+TB_burden <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=estimates",
+                      show_col_types = FALSE)
+
+# Write the data to disk
+write_csv(x = TB_burden,
+          file = "data/TB_burden_data.csv")  
+
+TB_burden
+```
+
+```{r}
+#WHO MDR/RR-TB burden estimates: 
+
+#MDR = Multidrug-resistant tuberculosis
+#RR = Rifampicin-resistant tuberculosis
+
+#| echo: true
+#| eval: true
+
+TB_drug_res <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=mdr_rr_estimates",
+                      show_col_types = FALSE)
+
+# Write the data to disk
+write_csv(x = TB_drug_res,
+          file = "data/TB_drug_resistance_data.csv")  
+
+TB_drug_res
+```
+
+```{r}
+#WHO TB infection estimates in household contacts:
+
+#| echo: true
+#| eval: true
+
+TB_contact <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=ltbi_estimates",
+                      show_col_types = FALSE)
+
+# Write the data to disk
+write_csv(x = TB_contact,
+          file = "data/TB_contact_data.csv")  
+
+TB_contact
+```
+
+------------------------------------------------------------------------
