@@ -273,7 +273,54 @@ TB_age_sex |>
 
 As there are no further NA values, in the remaining, cleaned data, it seems fair to conclude the cleaning of the data here.
 
-### **Data visualization:** 
+Finally, let's sample only the data from Denmark, just to get some insights:
+
+```{r}
+TB_age_sex |>
+  filter(country_name == "Denmark", sex == "Both")
+```
+
+It is worth noting that (at least for Denmark) the risk factors are only reported on the "sex = Both" grouped data.
+
+Based on the tibble above, it becomes clear that 'risk factor = all' might not be what we originally thought:
+
+```{r}
+#Understanding the "all" risk label: 
+TB_age_sex |>
+  filter(country_name == "Denmark", risk_factor != "all") |> #The ones that are not labelled "all". 
+  summarise(sum_TB = sum(TB_cases_best))
+```
+
+```{r}
+TB_age_sex |>
+  filter(country_name == "Denmark", risk_factor == "all") |> #The ones that ARE labelled "all". 
+  summarise(sum_TB = sum(TB_cases_best))
+```
+
+'Risk factor = all' is not specified anywhere in the WHO report.
+
+Therefore, based on the analysis above, it seems safe to draw a conclusion on the data above, that 'risk factor = all' actually means 'risk factor = no risk factor'.
+
+We will therefore rename the value accordingly:
+
+```{r}
+TB_age_sex <- TB_age_sex |>
+  mutate(
+    risk_factor = case_when(
+      risk_factor == "all" ~ "no risk factor",
+      TRUE ~ risk_factor        # keep all other values as they are
+    )
+  )
+
+```
+
+This was a nice case of how critical thinking can help out when official descriptions of the dataset fall short.
+
+```{r}
+TB_age_sex
+```
+
+### **Data visualization:**
 
 ```{r}
 #Box plot for all countries: 
