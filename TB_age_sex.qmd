@@ -29,9 +29,9 @@ But that is just a visualization thing in order to save memory.
 **Loading relevant libraries:**
 
 ```{r}
-library(tidyverse) #The main package of the course. Allows us to load nifty table-like                      structures. A bit similar to Pandas from Python. 
+library(tidyverse) #The main package of the course. Allows us to load nifty table-like structures. A bit similar to Pandas from Python. 
 library(dplyr)     #Allows us to make the |> pipelines when manipulating data. 
-library(stringr)   #Allows for string manipulation. Can be good when you e.g. want to                       rename stuff.
+library(stringr)   #Allows for string manipulation. Can be good when you e.g. want to rename stuff.
 library(ggplot2)   #For making cool plots. 
 ```
 
@@ -40,6 +40,8 @@ library(ggplot2)   #For making cool plots.
 WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]
 
 ```{r}
+#Loading age and sex and risk group data (2024 only): 
+
 data_folder <- "Data"
 data_file   <- file.path(data_folder, "TB_age_sex.csv")
 data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex"
@@ -148,7 +150,6 @@ unique(TB_age_sex$unit)
 #Adjusting some of the column names, to make them more intuitive. 
 TB_age_sex <- TB_age_sex |> 
   rename(
-    country_name = country,
     iso_code = iso3,
     TB_cases_best = best,
     TB_cases_min = lo,
@@ -277,7 +278,7 @@ Finally, let's sample only the data from Denmark, just to get some insights:
 
 ```{r}
 TB_age_sex |>
-  filter(country_name == "Denmark", sex == "Both")
+  filter(country == "Denmark", sex == "Both")
 ```
 
 It is worth noting that (at least for Denmark) the risk factors are only reported on the "sex = Both" grouped data.
@@ -287,19 +288,19 @@ Based on the tibble above, it becomes clear that 'risk factor = all' might not b
 ```{r}
 #Understanding the "all" risk label: 
 TB_age_sex |>
-  filter(country_name == "Denmark", risk_factor != "all") |> #The ones that are not labelled "all". 
+  filter(country == "Denmark", risk_factor != "all") |> #The ones that are not labelled "all". 
   summarise(sum_TB = sum(TB_cases_best))
 ```
 
 ```{r}
 TB_age_sex |>
-  filter(country_name == "Denmark", risk_factor == "all") |> #The ones that ARE labelled "all". 
+  filter(country == "Denmark", risk_factor == "all") |> #The ones that ARE labelled "all". 
   summarise(sum_TB = sum(TB_cases_best))
 ```
 
 'Risk factor = all' is not specified anywhere in the WHO report.
 
-Therefore, based on the analysis above, it seems safe to draw a conclusion on the data above, that 'risk factor = all' actually means 'risk factor = no risk factor'.
+Therefore, based on the analysis above, it seems safe to draw the conclusion that 'risk factor = all' actually means 'risk factor = no risk factor'.
 
 We will therefore rename the value accordingly:
 
@@ -320,6 +321,105 @@ This was a nice case of how critical thinking can help out when official descrip
 TB_age_sex
 ```
 
+------------------------------------------------------------------------
+
+As the very last step, we wanna merge some of the data from the other datasets onto this dataset.
+
+Specifically, we would like to obtain the information regarding the total population of each country, and merge it into our tibble.
+
+We can use the '***WHO TB burden estimates \[\>1Mb\]***' dataset to obtain the information about the population.
+
+Note: This dataset contains data from years other than 2024, so we can either filter those years away, or we can count for this in the way we merge.
+
+**Loading additional data in order to merge:**
+
+```{r}
+
+data_folder <- "Data"
+data_file   <- file.path(data_folder, "TB_burden.csv")
+data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=estimates"
+
+
+####################################
+
+# Ensure Data folder exists
+
+if (!dir.exists(data_folder)) {
+  message("Creating Data folder…")
+  dir.create(data_folder)
+}
+
+####################################
+
+# Load from disk OR download & save it through the link above: 
+
+if (file.exists(data_file)) {
+  
+  message("Loading TB_burden from local file…")
+  TB_burden <- read_csv(
+    file = data_file,
+    show_col_types = FALSE
+  )
+  
+} else {
+  
+  message("Local file not found. Downloading from WHO's website…")
+  TB_burden <- read_csv(
+    file = data_url,
+    show_col_types = FALSE
+  )
+  
+  message("Saving dataset to Data/TB_age_sex.csv…")
+  write_csv(
+    x = TB_burden,
+    file = data_file
+  )
+}
+
+#Display the data: 
+TB_burden
+```
+
+```{r}
+population_data_2024 <- TB_burden |>
+  select(country, e_pop_num, year) |>
+  filter(year == 2024) |>
+  rename(population_size = e_pop_num)
+
+population_data_2024
+```
+
+**Joining population data to main data:**
+
+```{r}
+TB_age_sex <- left_join(TB_age_sex, population_data_2024, by = c("country", "year"))
+TB_age_sex
+```
+
+Note: The population size is kept constant in all rows, but e.g., Afghanistan has several rows for e.g. different age groups, where the TB cases varies - so TB varies, but population size is constant for each row (country specific).
+
+Lastly, we can make a column which shows the amount of TB cases pr. 100k citizens in the country. This normalization will help make the TB cases more comparable for all countries, and makes the comparison more indepedent on the population size.
+
+```{r}
+TB_age_sex |>
+  group_by(country) |>
+  mutate(total_TB_cases_best = sum(TB_cases_best), total_TB_cases_min = sum(TB_cases_min), total_TB_cases_max = sum(TB_cases_max)) |> #Getting the total sum of TB cases for every country
+  ungroup() |>
+  mutate(TB_cases_pr_100k_best = total_TB_cases_best/10^6, TB_cases_pr_100k_min = total_TB_cases_min/10^6, TB_cases_pr_100k_max = total_TB_cases_max/10^6)
+  
+```
+
+Final (sanity) check if we have any NA values:
+
+```{r}
+TB_age_sex |>
+  summarise(across(everything(), ~ any(is.na(.))))
+```
+
+OK, we are all clear B)))
+
+That wraps up all of the data cleaning (for real, this time!)
+
 ### **Data visualization:**
 
 ```{r}
@@ -329,7 +429,7 @@ TB_age_sex
 #| eval: true
 
 ggplot(TB_age_sex,
-       aes(y = country_name, x = TB_cases_best)) +
+       aes(y = country, x = TB_cases_best)) +
   geom_boxplot(alpha = 1) +
   theme(legend.position = "none") +  
   labs(
@@ -346,17 +446,17 @@ ggplot(TB_age_sex,
 
 # Compute total cases per country
 top_countries <- TB_age_sex |>
-  group_by(country_name) |>
+  group_by(country) |>
   summarise(total_cases = sum(TB_cases_best, na.rm = TRUE)) |>
   arrange(desc(total_cases)) |>
   slice_head(n = 10) |>  # top 10 countries
-  pull(country_name)
+  pull(country)
 
 # Filter the data
-TB_top <- TB_age_sex |> filter(country_name %in% top_countries)
+TB_top <- TB_age_sex |> filter(country %in% top_countries)
 
 # Boxplot
-ggplot(TB_top, aes(y = country_name, x = TB_cases_best)) +
+ggplot(TB_top, aes(y = country, x = TB_cases_best)) +
   geom_boxplot(alpha = 0.7, fill = "skyblue") +
   labs(x = "TB cases", y = "Country") +
   theme_minimal()
@@ -367,7 +467,7 @@ ggplot(TB_top, aes(y = country_name, x = TB_cases_best)) +
 #| echo: true
 #| eval: true
 
-ggplot(TB_top, aes(y = country_name, x = TB_cases_best)) +
+ggplot(TB_top, aes(y = country, x = TB_cases_best)) +
   geom_boxplot(alpha = 0.7, fill = "salmon") +
   scale_x_log10() +
   labs(x = "TB cases (log scale)", y = "Country") +
@@ -378,9 +478,9 @@ ggplot(TB_top, aes(y = country_name, x = TB_cases_best)) +
 #grouping low-incidence countries together: 
 
 TB_data_summary <- TB_age_sex |>
-  group_by(country_name) |>
+  group_by(country) |>
   summarise(total_cases = sum(TB_cases_best, na.rm = TRUE)) |>
-  mutate(country_group = if_else(total_cases < 50000, "Other", country_name))
+  mutate(country_group = if_else(total_cases < 50000, "Other", country))
 
 ggplot(TB_data_summary, aes(y = country_group, x = total_cases)) +
   geom_boxplot() +
@@ -393,7 +493,7 @@ ggplot(TB_data_summary, aes(y = country_group, x = total_cases)) +
 
 ```{r}
 #All countries: 
-# unique(TB_data$country_name)
+# unique(TB_data$country)
 
 ```
 
@@ -406,7 +506,7 @@ ggplot(TB_data_summary, aes(y = country_group, x = total_cases)) +
 #| eval: true
 
 TB_cases_by_country <- TB_age_sex |>
-  group_by(country_name) |>
+  group_by(country) |>
   summarise(
     total_cases = sum(TB_cases_best, na.rm = TRUE)
   )
@@ -421,14 +521,14 @@ Cases in Denmark:
 #| eval: true
 
 TB_cases_by_country |>
-  filter(country_name == "Denmark")
+  filter(country == "Denmark")
 ```
 
 ```{r}
 #Only the numeric value: 
 
 TB_cases_by_country |>
-  filter(country_name == "Denmark") |>
+  filter(country == "Denmark") |>
   pull(total_cases) #pull() allows a specific element from a tibble to be extracted. 
   
 ```
@@ -440,7 +540,7 @@ TB_cases_by_country |>
 #| eval: true
 
 TB_cases_by_sex <- TB_age_sex |>
-  group_by(country_name, sex) |> 
+  group_by(country, sex) |> 
   summarise(
     total_cases = sum(TB_cases_best, na.rm = TRUE)
   ) |>
@@ -457,7 +557,7 @@ print(TB_cases_by_sex)
 #| eval: true
 
 ggplot(TB_cases_by_sex,
-       aes(y = country_name, x = total_cases)) +
+       aes(y = country, x = total_cases)) +
   geom_boxplot(alpha = 1) +
   theme(legend.position = "none") +  
   labs(
@@ -484,9 +584,10 @@ TB_burden <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=es
 
 # Write the data to disk
 write_csv(x = TB_burden,
-          file = "data/TB_burden_data.csv")  
+          file = "Data/TB_burden_data.csv")  
 
 TB_burden
+
 ```
 
 ```{r}
@@ -503,7 +604,7 @@ TB_drug_res <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=
 
 # Write the data to disk
 write_csv(x = TB_drug_res,
-          file = "data/TB_drug_resistance_data.csv")  
+          file = "Data/TB_drug_resistance_data.csv")  
 
 TB_drug_res
 ```
@@ -519,7 +620,7 @@ TB_contact <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=l
 
 # Write the data to disk
 write_csv(x = TB_contact,
-          file = "data/TB_contact_data.csv")  
+          file = "Data/TB_contact_data.csv")  
 
 TB_contact
 ```
