@@ -1,4 +1,3 @@
-[Written: 23/11-2025]
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 Welcome to group 26's project repo!
