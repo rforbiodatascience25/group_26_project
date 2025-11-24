@@ -24,6 +24,8 @@ TestResults.xml
 
 #Don't want to save the personal '.Rproj' file.
 group_26_project.Rproj
+*.Rproj
+#The '*' ensures that we cover more broadly.
 
 #Data should not be stored on Git. Any data in Data folder should not be pushed to the Git repo.
 Data/*

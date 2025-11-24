@@ -19,35 +19,101 @@ But that is just a visualization thing in order to save memory.
 
 ------------------------------------------------------------------------
 
-WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]:
+**Note to self - add this in all code chunks when wrapping up:**
 
 ```{r}
-# Retrieve the data directly
-
 #| echo: true
 #| eval: true
-
-TB_data <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex",
-                    show_col_types = FALSE #Hides the annoying "Column specification" message. 
-                    )
-
-# Write the data to disk
-write_csv(x = TB_data, file = "data/TB_data.csv")
-
-TB_data
 ```
 
+**Loading relevant libraries:**
+
 ```{r}
-#summary(TB_data)
+library(tidyverse) #The main package of the course. Allows us to load nifty table-like                      structures. A bit similar to Pandas from Python. 
+library(dplyr)     #Allows us to make the |> pipelines when manipulating data. 
+library(stringr)   #Allows for string manipulation. Can be good when you e.g. want to                       rename stuff.
+library(ggplot2)   #For making cool plots. 
+```
+
+**Loading data:**
+
+WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]
+
+```{r}
+data_folder <- "Data"
+data_file   <- file.path(data_folder, "TB_age_sex.csv")
+data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex"
+
+
+####################################
+
+# Ensure Data folder exists
+
+if (!dir.exists(data_folder)) {
+  message("Creating Data folder…")
+  dir.create(data_folder)
+}
+
+####################################
+
+# Load from disk OR download & save it through the link above: 
+
+if (file.exists(data_file)) {
+  
+  message("Loading TB_age_sex from local file…")
+  TB_age_sex <- read_csv(
+    file = data_file,
+    show_col_types = FALSE
+  )
+  
+} else {
+  
+  message("Local file not found. Downloading from WHO's website…")
+  TB_age_sex <- read_csv(
+    file = data_url,
+    show_col_types = FALSE
+  )
+  
+  message("Saving dataset to Data/TB_age_sex.csv…")
+  write_csv(
+    x = TB_age_sex,
+    file = data_file
+  )
+}
+
+#Display the data: 
+TB_age_sex
+
+```
+
+(Quick note: I have included the use of *if-statements*, which might be considered a bit outside the curriculum. I only do it in order to make a flexible code that ensures that the data is only downloaded online if it has not already been downloaded by the user before (first time running the code) - in order not to waste computational resources, as Leon mentioned that there were some memory problems on the cluster.
+
+**Comments about the data:**
+
+Shows estimated TB cases for different countries.
+
+This particular dataset only contains data from **2024**.
+
+Shows metadata about **age** groups, **sex**, and **risk factors** (e.g., HIV).
+
+Furthermore, it shows the best estimate of TB cases ("**best**" column) a high bound of that estimate ("**hi**" column), and a lower bound of that estimate ("**lo**" column).
+
+### **Data exploration and cleaning:**
+
+```{r}
+#Summary statistics
+
+#Note: The output is not very pretty. Use the code block below. 
+
+#summary(TB_age_sex)
 
 ```
 
 ```{r}
 #Some summary statistics: 
 
-library(dplyr)
 
-TB_data |> 
+TB_age_sex |> 
   summarise(
     n_rows = n(),
     n_countries = n_distinct(country),
@@ -62,28 +128,25 @@ TB_data |>
 
 ```
 
-```{r}
-#| echo: true
-#| eval: true
+9031 rows, 182 countries, 3 sex categories (male, female, and aggregated (aka. "both")), a total estimate of 71,744,072 TB cases (**\~72 million TB cases in 2024**).
 
-unique(TB_data$measure)
+```{r}
+#All unique values in the "meaure" column
+unique(TB_age_sex$measure)
 ```
 
 ```{r}
-#| echo: true
-#| eval: true
-
-unique(TB_data$unit)
+#All unique values in the "unit" column
+unique(TB_age_sex$unit)
 ```
 
-Renaming the data:
+"Unit = num" and "Measure = inc" mean that it is the number of TB incidences that year.
+
+**Renaming columns in the data:**
 
 ```{r}
-#| echo: true
-#| eval: true
-
 #Adjusting some of the column names, to make them more intuitive. 
-TB_data <- TB_data |> 
+TB_age_sex <- TB_age_sex |> 
   rename(
     country_name = country,
     iso_code = iso3,
@@ -91,47 +154,126 @@ TB_data <- TB_data |>
     TB_cases_min = lo,
     TB_cases_max = hi
   )
-
 ```
 
-Note: The age group sometimes contains info like "15plus" instead of e.g. "15-100".
+```{r}
+TB_age_sex
+```
 
-Furthermore:
-
-"Unit = num" and "Measure = inc" means that it is the number of TB incidences that year.
+Note: The age group sometimes contains info like "15plus" instead of e.g. "15-100" or "15+".
 
 Changing the sex: f, m, a to female, male, both (aggregated)
 
 ```{r}
-library(dplyr)
-library(stringr)
-
-#| echo: true
-#| eval: true
-
-#The case_when is used to change the values. 
+#The 'case_when()' function is used to change the values. 
 #It works as a replace function. 
 
-TB_data <- TB_data |> 
+TB_age_sex <- TB_age_sex |> 
   mutate( 
     sex = case_when( 
       sex == "m" ~ "Male", 
       sex == "f" ~ "Female", 
       sex == "a" ~ "Both", 
-      TRUE ~ sex #This line ensures that e.g. "Unknown" remains as "Unknown". 
     ) 
   ) 
 
-print(TB_data)
+print(TB_age_sex)
 ```
 
 ```{r}
 #Sanity/ quality check: 
-print( unique(TB_data$sex) ) 
+print( unique(TB_age_sex$sex) ) 
+
 #Printing the unique values from the "sex" column
 #It should only return Male, Female and Both. 
 
 ```
+
+Arguably, the columns for "iso2", "iso_code", iso_numeric", "measure" and "unit" don't present any particularly valuable info, so we will just remove those columns.
+
+**Remove irrelevant columns:**
+
+```{r}
+TB_age_sex <- TB_age_sex |>
+  select(-"iso2", -"iso_code", -"iso_numeric", -"measure", -"unit") #The minus sign tells R to NOT select those columns. 
+
+```
+
+```{r}
+print(TB_age_sex)
+```
+
+**All of the risk factors in the data:**
+
+```{r}
+unique(TB_age_sex$risk_factor)
+```
+
+all = all risk factors combined.
+
+alc = alcoholism
+
+smk = smoking
+
+dia = diabetes
+
+hiv = HIV infected
+
+und = undernourishment
+
+```{r}
+TB_age_sex <- TB_age_sex |> 
+  mutate( 
+    risk_factor = case_when( 
+      risk_factor == "all" ~ "all", #stay the way it is. 
+      risk_factor == "alc" ~ "alcoholism", 
+      risk_factor == "smk" ~ "smoking", 
+      risk_factor == "dia" ~ "diabetes", 
+      risk_factor == "hiv" ~ "HIV", #capital letters
+      risk_factor == "und" ~ "undernourishment" 
+    ) 
+  ) 
+```
+
+Sanity check:
+
+```{r}
+unique(TB_age_sex$risk_factor)
+```
+
+Last adjustments to the data would be correcting the "age_group" so e.g. "15plus" becomes "15+".
+
+```{r}
+unique(TB_age_sex$age_group)
+```
+
+```{r}
+TB_age_sex <- TB_age_sex |>
+  mutate(age_group = str_replace(age_group, "plus", "+")) #str_replace is from 'stringr'
+```
+
+```{r}
+#Sanity check: 
+unique(TB_age_sex$age_group)
+```
+
+**Checking if there are any NA values in the data:**
+
+```{r}
+#Checking for NA values throughout entire dataset: 
+any(is.na(TB_age_sex))
+```
+
+Could also have used this code to inspect each of the columns individually:
+
+```{r}
+TB_age_sex |>
+  summarise(across(everything(), ~ any(is.na(.))))
+```
+
+As there are no further NA values, in the remaining, cleaned data, it seems fair to conclude the cleaning of the data here.
+
+### **Data visualization:** 
 
 ```{r}
 #Box plot for all countries: 
@@ -139,7 +281,7 @@ print( unique(TB_data$sex) )
 #| echo: true
 #| eval: true
 
-ggplot(TB_data,
+ggplot(TB_age_sex,
        aes(y = country_name, x = TB_cases_best)) +
   geom_boxplot(alpha = 1) +
   theme(legend.position = "none") +  
@@ -151,14 +293,12 @@ ggplot(TB_data,
 
 ```{r}
 #Boxplot of the top 10 countries with most total TB cases: 
-library(dplyr)
-library(ggplot2)
 
 #| echo: true
 #| eval: true
 
 # Compute total cases per country
-top_countries <- TB_data |>
+top_countries <- TB_age_sex |>
   group_by(country_name) |>
   summarise(total_cases = sum(TB_cases_best, na.rm = TRUE)) |>
   arrange(desc(total_cases)) |>
@@ -166,7 +306,7 @@ top_countries <- TB_data |>
   pull(country_name)
 
 # Filter the data
-TB_top <- TB_data |> filter(country_name %in% top_countries)
+TB_top <- TB_age_sex |> filter(country_name %in% top_countries)
 
 # Boxplot
 ggplot(TB_top, aes(y = country_name, x = TB_cases_best)) +
@@ -190,7 +330,7 @@ ggplot(TB_top, aes(y = country_name, x = TB_cases_best)) +
 ```{r}
 #grouping low-incidence countries together: 
 
-TB_data_summary <- TB_data |>
+TB_data_summary <- TB_age_sex |>
   group_by(country_name) |>
   summarise(total_cases = sum(TB_cases_best, na.rm = TRUE)) |>
   mutate(country_group = if_else(total_cases < 50000, "Other", country_name))
@@ -218,7 +358,7 @@ ggplot(TB_data_summary, aes(y = country_group, x = total_cases)) +
 #| echo: true
 #| eval: true
 
-TB_cases_by_country <- TB_data |>
+TB_cases_by_country <- TB_age_sex |>
   group_by(country_name) |>
   summarise(
     total_cases = sum(TB_cases_best, na.rm = TRUE)
@@ -252,7 +392,7 @@ TB_cases_by_country |>
 #| echo: true
 #| eval: true
 
-TB_cases_by_sex <- TB_data |>
+TB_cases_by_sex <- TB_age_sex |>
   group_by(country_name, sex) |> 
   summarise(
     total_cases = sum(TB_cases_best, na.rm = TRUE)
@@ -285,7 +425,7 @@ ggplot(TB_cases_by_sex,
 
 ------------------------------------------------------------------------
 
-Loading the 3 other datasets:
+Loading the 3 other datasets (remove later):
 
 ```{r}
 #| echo: true
