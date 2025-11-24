@@ -21,3 +21,9 @@ rad.json
 #Test results file
 TestResults.xml
 .Rproj.user
+
+#Don't want to save the personal '.Rproj' file.
+group_26_project.Rproj
+
+#Data should not be stored on Git. Any data in Data folder should not be pushed to the Git repo.
+Data/*

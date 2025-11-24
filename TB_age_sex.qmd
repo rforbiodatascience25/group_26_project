@@ -3,9 +3,11 @@ title: "TB_R_course"
 format: html
 ---
 
-WHO 2025 data on Tuberculosis:
+WHO 2025 data on Tuberculosis.
 
-"WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]"
+In this script, we will be working with the following dataset:
+
+"***WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]***"
 
 Link:
 
