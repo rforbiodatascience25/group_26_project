@@ -26,34 +26,32 @@ The resulting data analysis should be something which could, hypothetically,
 be presented to governments or healthcare workers in order to aid them in their decision-making and health care strategies.
 
 
-
 ───── ◇◆ **AI DECLARATION** ◆◇ ─────
 
+<br>
+Generative AI (ChatGPT) was used in creating this project. <br> <br>
+*Explicit uses:* <br>
+- Finding a suitable dataset that aligned with the authors' interests. <br>
+- Providing explanations about the raw dataset. <br>
+- Bug fixing. <br>
+- Suggesting code improvements. <br>
+- Generating R code (in alignment with the course style and curriculum). <br>
+<br>
+**Responsibility** <br>
+We hereby acknowledge that all facts, decisions, and ideas provided by the LLMs were used to guide our writing process, and all decisions regarding the content of the project are entirely our own. <br>
+Furthermore, we acknowledge and have considered that generative AI can hinder the active learning process when it is blindly used as an "answer machine" instead of a "sparing partner". <br>
+<br>
+**Documentation**<br>
+<br>
+AI citation: <br>
+OpenAI. ChatGPT, Nov. 2024 version, OpenAI, https://www.openai.com/ <br>
+<br>
+*Prompt history of s215065:* <br>
+https://chatgpt.com/g/g-p-691a120e1c8c8191bd40a2ae23704a19-r-course-project/project <br>
+<br>
 
-Generative AI (ChatGPT) was used in creating this project. 
-*Explicit uses:*
-- Finding a suitable dataset that aligned with the authors' interests.
-- Providing explanations about the raw dataset.
-- Bug fixing.
-- Suggesting code improvements.
-- Generating R code (in alignment with the course style and curriculum).
-
-
-**Responsibility**
-We hereby acknowledge that all facts, decisions, and ideas provided by the LLMs were used to guide our writing process, and all decisions regarding the content of the project are entirely our own. 
-Furthermore, we acknowledge and have considered that generative AI can hinder the active learning process when it is blindly used as an "answer machine" instead of a "sparing partner". 
-
-**Documentation**
-AI citation: 
-OpenAI. ChatGPT, Nov. 2024 version, OpenAI, https://www.openai.com/
-
-*Prompt history of s215065:*
-https://chatgpt.com/g/g-p-691a120e1c8c8191bd40a2ae23704a19-r-course-project/project
-
-
-Finally, this AI declaration follows the guidelines outlined by DTU:
+Finally, this AI declaration follows the guidelines outlined by DTU: <br>
 https://www.bibliotek.dtu.dk/en/publishing/reference-management/kunstig-intelligens/eksempler
-
 
 
 
