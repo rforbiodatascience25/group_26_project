@@ -404,11 +404,13 @@ Note: The population size is kept constant in all rows, but e.g., Afghanistan ha
 Lastly, we can make a column which shows the amount of TB cases pr. 100k citizens in the country. This normalization will help make the TB cases more comparable for all countries, and makes the comparison more indepedent on the population size.
 
 ```{r}
+#Data augmentation - TB cases pr. 100k citizens. 
+
 TB_age_sex |>
   group_by(country) |>
   mutate(total_TB_cases_best = sum(TB_cases_best), total_TB_cases_min = sum(TB_cases_min), total_TB_cases_max = sum(TB_cases_max)) |> #Getting the total sum of TB cases for every country
   ungroup() |>
-  mutate(TB_cases_pr_100k_best = total_TB_cases_best/10^6, TB_cases_pr_100k_min = total_TB_cases_min/10^6, TB_cases_pr_100k_max = total_TB_cases_max/10^6)
+  mutate(TB_cases_pr_100k_best = total_TB_cases_best/10^5, TB_cases_pr_100k_min = total_TB_cases_min/10^5, TB_cases_pr_100k_max = total_TB_cases_max/10^5)
   
 ```
 
