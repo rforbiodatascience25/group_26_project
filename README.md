@@ -20,10 +20,45 @@ The dataset is raw, and as you will soon see, each of them contains a decent deg
 Each of the 4 datasets contains different metadata regarding global TB cases. 
 
 The goal of this project is to shed some light on some of the general trends associated with worldwide TB cases.
-The project aims at identifying of particularly vulnerable demographic and geographic groups, etc. 
+The project aims at identifying particularly vulnerable demographic and geographic groups, etc. 
 
 The resulting data analysis should be something which could, hypothetically, 
 be presented to governments or healthcare workers in order to aid them in their decision-making and health care strategies.
+
+
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
+##### AI declaration:
+
+**Declaring AI use**
+
+Generative AI (ChatGPT) was used in creating this project. 
+*Explicit uses:*
+- Finding a suitable dataset that aligned with the authors' interests.
+- Providing explanations about the raw dataset.
+- Bug fixing.
+- Suggesting code improvements.
+- Generating R code (in alignment with the course style and curriculum).
+
+
+**Responsibility**
+We hereby acknowledge that all facts, decisions, and ideas provided by the LLMs were used to guide our writing process, and all decisions regarding the content of the project are entirely our own. 
+Furthermore, we acknowledge and have considered that generative AI can hinder the active learning process when it is blindly used as an "answer machine" instead of a "sparing partner". 
+
+**Documentation**
+AI citation: 
+OpenAI. ChatGPT, Nov. 2024 version, OpenAI, https://www.openai.com/
+
+*Prompt history of s215065:*
+https://chatgpt.com/g/g-p-691a120e1c8c8191bd40a2ae23704a19-r-course-project/project
+
+
+Finally, this AI declaration follows the guidelines outlined by DTU:
+https://www.bibliotek.dtu.dk/en/publishing/reference-management/kunstig-intelligens/eksempler
+
+
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+
 
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
