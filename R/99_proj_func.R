@@ -38,10 +38,7 @@ raw_load_or_download <- function(data_file, data_url) {
   df
 }
 
-# ----------------------------------------------------------------------
-
-
-# -------- function to saw data --------------------------
+# -------- function to save data --------------------------
 
 save_data <- function(df, data_name) {
 
@@ -63,4 +60,24 @@ save_data <- function(df, data_name) {
     x = df,
     file = data_name
   )
+}
+
+# -------- function to load already cleaned data --------------------------
+
+load_data <- function(data_file) {
+
+  # Ensure data_file has full path
+  if (!startsWith(data_file, file.path("..", "data"))) {
+    data_file <- file.path(file.path("..", "data"), data_file)
+  }
+
+  # Load from disk OR download & save it through the link above:
+  if (file.exists(data_file)) {
+    message(paste0("Loading ", data_file, " from local file…"))
+    df <- read_csv(
+      file = data_file,
+      show_col_types = FALSE
+    )
+  }
+df
 }

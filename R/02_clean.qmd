@@ -29,7 +29,7 @@ source("99_proj_func.R")
 
 ------------------------------------------------------------------------
 
-**Loading data:** (Erase this block after finishing and trying everything)
+**Loading data:**
 
 WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]
 
@@ -153,7 +153,21 @@ Show the first 50 rows of TB_burden_clean (sanity check):
 head(TB_burden_clean,50)
 ```
 
-Now we save it into our data folder which is already cleaned:
+Now we previously saw with a count() that there are 5347 rows, if we take in account that there are 25 years per country, then 5347/25 is not an integer. Therefore we need to check which country or countries provided information from less years.
+
+```{r}
+TB_burden |> 
+group_by(year) |> 
+summarize(
+n = n()
+)
+```
+
+As it can be see on year 2001 and 2001 there's only have information from 211 countries, from 2002 to 2004 there are 212 countries, from 2005 to 2009 one more country, on 2010 a total of 214 countries and finally from 2011 a total of 215 countries.
+
+This information is important to notice that this table alone can be used for certain statistics and graphs, though if there's a need to join it with the other tables then probably it's better to focus from year 2011 onwards. Fortunately, the other two tables that can be used for a join have information only from 2015v onwards.
+
+So now we can save this table into our data folder which is already cleaned:
 
 ```{r}
 #Save data
