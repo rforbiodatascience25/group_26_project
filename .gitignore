@@ -6,6 +6,7 @@
 
 # Ignore raw data
 _raw/
+data/
 *.xlsx
 
 #Quarto cache
