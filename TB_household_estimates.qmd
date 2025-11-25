@@ -1,0 +1,241 @@
+---
+title: "TB_household_estimates"
+format: html
+---
+
+# 
+
+# 1. Loading Libraries
+
+```{r}
+library(tidyverse)
+```
+
+# 2. Loading Data
+
+```{r}
+#Loading LTBI estimates (Household contacts) data:
+
+data_folder <- "Data"
+data_file   <- file.path(data_folder, "LTBI_estimates.csv")
+data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=ltbi_estimates"
+
+
+####################################
+
+# Ensure Data folder exists
+
+if (!dir.exists(data_folder)) {
+  message("Creating Data folder…")
+  dir.create(data_folder)
+}
+
+####################################
+
+# Load from disk OR download & save it through the link above: 
+
+if (file.exists(data_file)) {
+  
+  message("Loading LTBI_estimates from local file…")
+  ltbi_data <- read_csv(
+    file = data_file,
+    show_col_types = FALSE
+  )
+  
+} else {
+  
+  message("Local file not found. Downloading from WHO's website…")
+  ltbi_data <- read_csv(
+    file = data_url,
+    show_col_types = FALSE
+  )
+  
+  message("Saving dataset to Data/LTBI_estimates.csv…")
+  write_csv(
+    x = ltbi_data,
+    file = data_file
+  )
+}
+
+#Display the data: 
+ltbi_data
+```
+
+# 3. Data Cleaning
+
+```{r}
+
+#| echo: true
+#| eval: true
+
+ltbi_data <- ltbi_data |>
+  # 1. Rename columns
+  rename(
+    # --- Contact Estimates ---
+    Contacts_best         = e_hh_contacts,
+    Contacts_min          = e_hh_contacts_lo,
+    Contacts_max          = e_hh_contacts_hi,
+    
+    # --- Preventive Treatment (General) ---
+    Preventive_Tx_Pct     = e_prevtx_hh_contacts_pct,
+    Preventive_Tx_Pct_min = e_prevtx_hh_contacts_pct_lo,
+    Preventive_Tx_Pct_max = e_prevtx_hh_contacts_pct_hi,
+    
+    # --- Preventive Treatment (Eligibility) ---
+    Preventive_Tx_Eligible     = e_prevtx_eligible,
+    Preventive_Tx_Eligible_min = e_prevtx_eligible_lo,
+    Preventive_Tx_Eligible_max = e_prevtx_eligible_hi,
+
+    # --- Preventive Treatment (Kids) ---
+    Preventive_Tx_Kids_Pct     = e_prevtx_kids_pct,
+    Preventive_Tx_Kids_Pct_min = e_prevtx_kids_pct_lo,
+    Preventive_Tx_Kids_Pct_max = e_prevtx_kids_pct_hi,
+    
+    # --- Metadata ---
+    WHO_region            = g_whoregion
+  ) |>
+  # 2. Remove irrelevant columns
+  select(-iso2, -iso3, -iso_numeric) |>
+  # 3. Clean survey source
+  mutate(
+    survey_source = str_extract(source_hh, "^[^;]+")
+  )
+
+# Sanity check: Inspect the new Kids Percentage column
+summary(ltbi_data$Preventive_Tx_Kids_Pct)
+
+# Sanity check: View the updated column names
+colnames(ltbi_data)
+```
+
+# 4. Data Exploration (2024 Focus)
+
+```{r}
+
+# Filter for the year 2024 to get the latest statistics
+ltbi_2024 <- ltbi_data |>
+  filter(year == 2024)
+
+# Calculate total estimated household contacts in 2024
+total_contacts_2024 <- ltbi_2024 |>
+  summarise(total = sum(Contacts_best, na.rm = TRUE))
+
+print(paste("Total estimated TB household contacts in 2024:", format(total_contacts_2024$total, big.mark = ",")))
+```
+
+# 5. Data Visualization
+
+```{r}
+
+# We want to plot the Top 10 countries.
+# First, identify the Top 10 countries based on 2024 numbers.
+top_countries <- ltbi_2024 |>
+  arrange(desc(Contacts_best)) |>
+  slice_head(n = 10) |>
+  pull(country)
+
+# Now, filter the FULL dataset (all years) to include only these top countries
+# This allows the boxplot to show the distribution/variance over the years.
+ltbi_top_10 <- ltbi_data |>
+  filter(country %in% top_countries)
+
+# Boxplot 1: Linear Scale
+ggplot(ltbi_top_10, aes(y = country, x = Contacts_best)) +
+  geom_boxplot(alpha = 0.7, fill = "skyblue") +
+  # Force the y-axis to follow the sorted order of top_countries
+  scale_y_discrete(limits = top_countries) + 
+  labs(
+    title = "Distribution of Estimated TB Household Contacts (2015-2024)",
+    subtitle = "Top 10 Countries (ranked by 2024 estimates)",
+    x = "Estimated Contacts",
+    y = "Country"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Boxplot 2: Log Scale
+ggplot(ltbi_top_10, aes(y = country, x = Contacts_best)) +
+  geom_boxplot(alpha = 0.7, fill = "salmon") +
+  scale_x_log10() + # Log scale for the x-axis
+  scale_y_discrete(limits = top_countries) +
+  labs(
+    title = "Distribution of Estimated TB Household Contacts (2015-2024)",
+    subtitle = "Log Scale - Top 10 Countries",
+    x = "Estimated Contacts (Log Scale)",
+    y = "Country"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+
+# 1. Find the Top 10 countries by Total Eligible Population in 2024
+top_eligible_countries <- ltbi_data |>
+  filter(year == 2024) |>
+  arrange(desc(Preventive_Tx_Eligible)) |>
+  slice_head(n = 10) |>
+  pull(country)
+
+# 2. Filter data for these countries
+kids_data_top10 <- ltbi_data |>
+  filter(year == 2024, country %in% top_eligible_countries)
+
+# 3. Plot: How many eligible kids actually got treated?
+ggplot(kids_data_top10, aes(x = reorder(country, Preventive_Tx_Kids_Pct), y = Preventive_Tx_Kids_Pct)) +
+  
+  # The bars representing the percentage
+  geom_col(fill = "steelblue", alpha = 0.8) +
+  
+  # Add labels on top of the bars so you can read the exact %
+  geom_text(aes(label = round(Preventive_Tx_Kids_Pct, 1)), 
+            hjust = -0.2, size = 3.5) +
+  
+  coord_flip() + # Flip for readability
+  
+  # Clean up the axes
+  scale_y_continuous(limits = c(0, 110), breaks = seq(0, 100, 25)) + 
+  
+  labs(
+    title = "Preventive Treatment Coverage among Children (2024)",
+    subtitle = "In the 10 countries with the highest eligible populations",
+    x = "Country",
+    y = "Children Treated (%)"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# 1. Summarize data: Calculate total global contacts per year
+global_trend <- ltbi_data |>
+  group_by(year) |>
+  summarise(
+    Total_Contacts = sum(Contacts_best, na.rm = TRUE),
+    Total_Min      = sum(Contacts_min, na.rm = TRUE),
+    Total_Max      = sum(Contacts_max, na.rm = TRUE)
+  )
+
+# 2. Create the Line Graph
+ggplot(global_trend, aes(x = year, y = Total_Contacts)) +
+  
+  # The ribbon shows the uncertainty interval (Low to High estimates)
+  geom_ribbon(aes(ymin = Total_Min, ymax = Total_Max), fill = "skyblue", alpha = 0.3) +
+  
+  # The line shows the "Best" estimate
+  geom_line(color = "dodgerblue4", linewidth = 1.2) +
+  geom_point(color = "dodgerblue4", size = 3) +
+  
+  # Formatting the Y-axis to be readable (e.g., "12M" instead of 12000000)
+  scale_y_continuous(labels = scales::label_number(scale = 1e-6, suffix = "M")) +
+  
+  # Ensure X-axis shows every year
+  scale_x_continuous(breaks = 2015:2024) +
+  
+  labs(
+    title = "Global Trend of Estimated TB Household Contacts (2015-2024)",
+    subtitle = "Solid line represents the best estimate; shaded area represents the uncertainty interval.",
+    x = "Year",
+    y = "Total Contacts (Millions)"
+  ) +
+  theme_minimal()
+```

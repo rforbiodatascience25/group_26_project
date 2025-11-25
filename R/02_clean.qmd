@@ -3,3 +3,444 @@ title: "02_clean"
 format: html
 ---
 
+WHO 2025 data on Tuberculosis.
+
+In this script, we will be working with the data cleaning, for that purpose we need to understand first our data so we can continue with the rest.
+
+------------------------------------------------------------------------
+
+**Note to self - add this in all code chunks when wrapping up:**
+
+```{r}
+#| echo: true
+#| eval: true
+```
+
+**Loading relevant libraries:**
+
+```{r}
+library("tidyverse") 
+```
+
+```{r}
+#Access to the function for loading the datasets and to save them
+source("99_proj_func.R")
+```
+
+------------------------------------------------------------------------
+
+**Loading data:** (Erase this block after finishing and trying everything)
+
+WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]
+
+```{r}
+#Loading age and sex and risk group data (2024 only): 
+
+data_file   <- "TB_age_sex.csv"
+data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex"
+TB_age_sex <- raw_load_or_download(data_file, data_url)
+
+#Display the data: 
+TB_age_sex
+
+```
+
+WHO TB burden estimates [>1Mb]:
+
+```{r}
+#Loading TB burden estimates: 
+
+data_file   <- "TB_burden.csv"
+data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=estimates"
+TB_burden <- raw_load_or_download(data_file, data_url)
+
+#Display the data: 
+TB_burden
+```
+
+WHO TB data dictionary:
+
+```{r}
+#Loading the data dictionary: 
+
+data_file   <- "TB_dictionary.csv"
+data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=dictionary"
+TB_dictionary <- raw_load_or_download(data_file, data_url)
+
+#Display the data: 
+TB_dictionary
+```
+
+WHO MDR/RR-TB burden estimates:
+
+```{r}
+#Loading LTBI estimates (Household contacts) data:
+
+data_file   <- "LTBI_estimates.csv"
+data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=ltbi_estimates"
+ltbi_data <- raw_load_or_download(data_file, data_url)
+
+#Display the data: 
+ltbi_data
+```
+
+------------------------------------------------------------------------
+
+**Cleaning of TB_burden:**
+
+Get only the data dictionary based on burden countries (and some extra) to understand the data on TB_burden and be able to preoperly clean it:
+
+```{r}
+#
+variables <- c('iso3','iso2','iso_numeric','g_whoregion','year')
+
+TB_dictionary |> filter(
+  variable_name %in% variables | str_starts(variable_name, 'e_') | str_starts(variable_name, 'cfr') | str_starts(variable_name, 'c_')
+)
+```
+
+Count nulls per column in TB_burden, and total amount of rows to compare them:
+
+```{r}
+na_counts <- enframe(colSums(is.na(TB_burden)), name = "Column", value = "NA_Count")
+TB_burden |> count()
+na_counts
+```
+
+Check the reason for missing values.
+For the cases with only 25 cases we can see it's because of Namibia not having an iso2 country code, and also 
+for North Korea not providing enough information.
+For cases like e_tbhiv_prct_lo and e_tbhiv_prct_hi we see that the whole column is filled with NA's.
+And finally there are some other columns with NA's on some specific countries.
+
+```{r}
+TB_burden[is.na(TB_burden$iso2),]#Data from Namibia
+TB_burden[is.na(TB_burden$e_inc_100k),]#Data from Korea
+TB_burden[is.na(TB_burden$e_tbhiv_prct),]#Data for random columns
+```
+
+As we have the iso3 country code, we don't actually need an iso2, so we remove this column. Furthermore, we also remove iso3 and iso_numeric as they don't provide any valuable information, Also, as there are two columns that are full of missing values, so in order to avoid using memory and since they don't give any information we decided to remove them:
+
+```{r}
+TB_burden <- TB_burden |>
+  select(-iso2, -iso3, -iso_numeric, -e_tbhiv_prct_lo, -e_tbhiv_prct_hi)
+```
+
+The "e" at the begining of the columns means "estimated" which is easy to understand. But there are some problems as for example column "cfr_pct" refers to case fatality ratio percentage, though there are some other columns like "c_cdr" which are also expressed in terms of percentage as we can see when looking at the data dictionary. Therefore, those columns will be renamed for better understandably:
+
+```{r}
+TB_burden_clean <- TB_burden |> 
+  rename(
+    c_cdr_pct = c_cdr,
+    c_cdr_pct_lo = c_cdr_lo,
+    c_cdr_pct_hi = c_cdr_hi
+  )
+```
+
+Show the first 50 rows of TB_burden_clean (sanity check):
+
+```{r}
+head(TB_burden_clean,50)
+```
+
+Now we save it into our data folder which is already cleaned:
+
+```{r}
+#Save data
+save_data(TB_burden_clean, "TB_burden.tsv")
+```
+
+------------------------------------------------------------------------
+
+**Cleaning of TB_age_sex:**
+
+**Comments about the data:**
+
+Shows estimated TB cases for different countries.
+
+This particular dataset only contains data from **2024**.
+
+Shows metadata about **age** groups, **sex**, and **risk factors** (e.g., HIV).
+
+Furthermore, it shows the best estimate of TB cases ("**best**" column) a high bound of that estimate ("**hi**" column), and a lower bound of that estimate ("**lo**" column).
+
+### **Data exploration:**
+
+```{r}
+#Summary statistics
+
+#Note: The output is not very pretty. Use the code block below. 
+
+#summary(TB_age_sex)
+
+```
+
+```{r}
+#Some summary statistics: 
+
+
+TB_age_sex |> 
+  summarise(
+    n_rows = n(),
+    n_countries = n_distinct(country),
+    n_years = n_distinct(year),
+    n_sex_categories = n_distinct(sex),
+    min_year = min(year, na.rm = TRUE),
+    max_year = max(year, na.rm = TRUE),
+    total_cases_best = sum(best, na.rm = TRUE),
+    total_cases_lo = sum(lo, na.rm = TRUE),
+    total_cases_hi = sum(hi, na.rm = TRUE)
+  )
+
+```
+
+9031 rows, 182 countries, 3 sex categories (male, female, and aggregated (aka. "both")), a total estimate of 71,744,072 TB cases (**\~72 million TB cases in 2024**).
+
+```{r}
+#All unique values in the "meaure" column
+unique(TB_age_sex$measure)
+```
+
+```{r}
+#All unique values in the "unit" column
+unique(TB_age_sex$unit)
+```
+
+"Unit = num" and "Measure = inc" mean that it is the number of TB incidences that year.
+
+**Renaming columns in the data:**
+
+```{r}
+#Adjusting some of the column names, to make them more intuitive. 
+TB_age_sex <- TB_age_sex |> 
+  rename(
+    iso_code = iso3,
+    TB_cases_best = best,
+    TB_cases_min = lo,
+    TB_cases_max = hi
+  )
+```
+
+```{r}
+TB_age_sex
+```
+
+Note: The age group sometimes contains info like "15plus" instead of e.g. "15-100" or "15+".
+
+Changing the sex: f, m, a to female, male, both (aggregated)
+
+```{r}
+#The 'case_when()' function is used to change the values. 
+#It works as a replace function. 
+
+TB_age_sex <- TB_age_sex |> 
+  mutate( 
+    sex = case_when( 
+      sex == "m" ~ "Male", 
+      sex == "f" ~ "Female", 
+      sex == "a" ~ "Both", 
+    ) 
+  ) 
+
+print(TB_age_sex)
+```
+
+```{r}
+#Sanity/ quality check: 
+print( unique(TB_age_sex$sex) ) 
+
+#Printing the unique values from the "sex" column
+#It should only return Male, Female and Both. 
+
+```
+
+Arguably, the columns for "iso2", "iso_code", iso_numeric", "measure" and "unit" don't present any particularly valuable info, so we will just remove those columns.
+
+**Remove irrelevant columns:**
+
+```{r}
+TB_age_sex <- TB_age_sex |>
+  select(-"iso2", -"iso_code", -"iso_numeric", -"measure", -"unit") #The minus sign tells R to NOT select those columns. 
+
+```
+
+```{r}
+print(TB_age_sex)
+```
+
+**All of the risk factors in the data:**
+
+```{r}
+unique(TB_age_sex$risk_factor)
+```
+
+all = all risk factors combined.
+
+alc = alcoholism
+
+smk = smoking
+
+dia = diabetes
+
+hiv = HIV infected
+
+und = undernourishment
+
+```{r}
+TB_age_sex <- TB_age_sex |> 
+  mutate( 
+    risk_factor = case_when( 
+      risk_factor == "all" ~ "all", #stay the way it is. 
+      risk_factor == "alc" ~ "alcoholism", 
+      risk_factor == "smk" ~ "smoking", 
+      risk_factor == "dia" ~ "diabetes", 
+      risk_factor == "hiv" ~ "HIV", #capital letters
+      risk_factor == "und" ~ "undernourishment" 
+    ) 
+  ) 
+```
+
+Sanity check:
+
+```{r}
+unique(TB_age_sex$risk_factor)
+```
+
+Last adjustments to the data would be correcting the "age_group" so e.g. "15plus" becomes "15+".
+
+```{r}
+unique(TB_age_sex$age_group)
+```
+
+```{r}
+TB_age_sex <- TB_age_sex |>
+  mutate(age_group = str_replace(age_group, "plus", "+")) #str_replace is from 'stringr'
+```
+
+```{r}
+#Sanity check: 
+unique(TB_age_sex$age_group)
+```
+
+**Checking if there are any NA values in the data:**
+
+```{r}
+#Checking for NA values throughout entire dataset: 
+any(is.na(TB_age_sex))
+```
+
+Could also have used this code to inspect each of the columns individually:
+
+```{r}
+TB_age_sex |>
+  summarise(across(everything(), ~ any(is.na(.))))
+```
+
+As there are no further NA values, in the remaining, cleaned data, it seems fair to conclude the cleaning of the data here.
+
+Finally, let's sample only the data from Denmark, just to get some insights:
+
+```{r}
+TB_age_sex |>
+  filter(country == "Denmark", sex == "Both")
+```
+
+It is worth noting that (at least for Denmark) the risk factors are only reported on the "sex = Both" grouped data.
+
+Based on the tibble above, it becomes clear that 'risk factor = all' might not be what we originally thought:
+
+```{r}
+#Understanding the "all" risk label: 
+TB_age_sex |>
+  filter(country == "Denmark", risk_factor != "all") |> #The ones that are not labelled "all". 
+  summarise(sum_TB = sum(TB_cases_best))
+```
+
+```{r}
+TB_age_sex |>
+  filter(country == "Denmark", risk_factor == "all") |> #The ones that ARE labelled "all". 
+  summarise(sum_TB = sum(TB_cases_best))
+```
+
+'Risk factor = all' is not specified anywhere in the WHO report.
+
+Therefore, based on the analysis above, it seems safe to draw the conclusion that 'risk factor = all' actually means 'risk factor = no risk factor'.
+
+We will therefore rename the value accordingly:
+
+```{r}
+TB_age_sex <- TB_age_sex |>
+  mutate(
+    risk_factor = case_when(
+      risk_factor == "all" ~ "no risk factor",
+      TRUE ~ risk_factor        # keep all other values as they are
+    )
+  )
+
+```
+
+This was a nice case of how critical thinking can help out when official descriptions of the dataset fall short.
+
+```{r}
+TB_age_sex
+```
+
+```{r}
+#Save data
+save_data(TB_age_sex, "TB_age_sex.tsv")
+```
+
+
+------------------------------------------------------------------------
+
+**Cleaning of TB_household_estimates:**
+
+```{r}
+
+#| echo: true
+#| eval: true
+
+ltbi_data <- ltbi_data |>
+  # 1. Rename columns
+  rename(
+    # --- Contact Estimates ---
+    Contacts_best         = e_hh_contacts,
+    Contacts_min          = e_hh_contacts_lo,
+    Contacts_max          = e_hh_contacts_hi,
+    
+    # --- Preventive Treatment (General) ---
+    Preventive_Tx_Pct     = e_prevtx_hh_contacts_pct,
+    Preventive_Tx_Pct_min = e_prevtx_hh_contacts_pct_lo,
+    Preventive_Tx_Pct_max = e_prevtx_hh_contacts_pct_hi,
+    
+    # --- Preventive Treatment (Eligibility) ---
+    Preventive_Tx_Eligible     = e_prevtx_eligible,
+    Preventive_Tx_Eligible_min = e_prevtx_eligible_lo,
+    Preventive_Tx_Eligible_max = e_prevtx_eligible_hi,
+
+    # --- Preventive Treatment (Kids) ---
+    Preventive_Tx_Kids_Pct     = e_prevtx_kids_pct,
+    Preventive_Tx_Kids_Pct_min = e_prevtx_kids_pct_lo,
+    Preventive_Tx_Kids_Pct_max = e_prevtx_kids_pct_hi,
+    
+    # --- Metadata ---
+    WHO_region            = g_whoregion
+  ) |>
+  # 2. Remove irrelevant columns
+  select(-iso2, -iso3, -iso_numeric) |>
+  # 3. Clean survey source
+  mutate(
+    survey_source = str_extract(source_hh, "^[^;]+")
+  )
+
+# Sanity check: Inspect the new Kids Percentage column
+summary(ltbi_data$Preventive_Tx_Kids_Pct)
+
+# Sanity check: View the updated column names
+colnames(ltbi_data)
+```
+
+```{r}
+#Save data
+save_data(ltbi_data, "LTBI_estimates.tsv")
+```
