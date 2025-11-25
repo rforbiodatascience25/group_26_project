@@ -26,8 +26,8 @@ The resulting data analysis should be something which could, hypothetically,
 be presented to governments or healthcare workers in order to aid them in their decision-making and health care strategies.
 
 
+
 ───── ◇◆ **AI DECLARATION** ◆◇ ─────
-──────────────────────────────────
 
 
 Generative AI (ChatGPT) was used in creating this project. 
