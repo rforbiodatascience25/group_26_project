@@ -30,7 +30,7 @@ be presented to governments or healthcare workers in order to aid them in their 
 <br>
 Generative AI (ChatGPT) was used in creating this project. <br>
 **Explicit uses:**
-<br
+<br>
 - Finding a suitable dataset that aligned with the authors' interests. <br>
 - Providing explanations about the raw dataset. <br>
 - Bug fixing. <br>
