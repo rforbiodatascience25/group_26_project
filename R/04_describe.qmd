@@ -3,3 +3,74 @@ title: "04_describe"
 format: html
 ---
 
+WHO 2025 data on Tuberculosis, data description
+
+In this script, it's intended to give an explanation on data features, using different methods and graphs. The provided data description is based on three datasets:
+
+- The joined dataset which only haves information from 2024
+- The joined dataset which contains information from 2015 to 2024
+- The WHO TB burden estimates \[\>1Mb\] dataset, as it contains information from previous years
+
+------------------------------------------------------------------------
+
+**Note to self - add this in all code chunks when wrapping up:**
+
+```{r}
+#| echo: true
+#| eval: true
+```
+
+**Loading relevant libraries:**
+
+```{r}
+library("tidyverse") 
+```
+
+```{r}
+#Access to the function for loading the datasets and to save them
+source("99_proj_func.R")
+```
+
+------------------------------------------------------------------------
+
+**Loading data:**
+
+Joined dataset, year 2024:
+
+```{r}
+#Loading age and sex and risk group data (2024 only): 
+
+data_file          <- "TB_age_sex_joined.tsv"
+TB_age_sex_joined  <- load_data(data_file)
+
+#Display the data: 
+TB_age_sex_joined
+```
+
+Joined dataset, year 2015 to 2024:
+
+```{r}
+#Loading age and sex and risk group data (2024 only): 
+
+data_file           <- "TB_10_years_joined.tsv"
+TB_10_years_joined  <- load_data(data_file)
+
+#Display the data: 
+TB_10_years_joined
+```
+
+WHO TB burden estimates \[\>1Mb\]:
+
+```{r}
+#Loading TB burden estimates: 
+
+data_file   <- "TB_burden.tsv"
+TB_burden   <- load_data(data_file)
+
+#Display the data: 
+TB_burden
+```
+
+------------------------------------------------------------------------
+
+It's late, hope someone sees this before me, maybe some statistics and graphs would be fine, but nothing that complex, complex stuff should go into analysis part.
