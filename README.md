@@ -26,11 +26,9 @@ The resulting data analysis should be something which could, hypothetically,
 be presented to governments or healthcare workers in order to aid them in their decision-making and health care strategies.
 
 
-/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+───── ◇◆ **AI DECLARATION** ◆◇ ─────
+──────────────────────────────────
 
-##### AI declaration:
-
-**Declaring AI use**
 
 Generative AI (ChatGPT) was used in creating this project. 
 *Explicit uses:*
@@ -56,8 +54,6 @@ https://chatgpt.com/g/g-p-691a120e1c8c8191bd40a2ae23704a19-r-course-project/proj
 Finally, this AI declaration follows the guidelines outlined by DTU:
 https://www.bibliotek.dtu.dk/en/publishing/reference-management/kunstig-intelligens/eksempler
 
-
-/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 
 
 
