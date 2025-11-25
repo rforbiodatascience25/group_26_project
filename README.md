@@ -64,6 +64,12 @@ OpenAI. ChatGPT, Nov. 2024 version, OpenAI, https://www.openai.com/
 https://chatgpt.com/g/g-p-691a120e1c8c8191bd40a2ae23704a19-r-course-project/project <br>
 <br>
 
+*s252623:*
+<br>
+The AI was only used to ask question providing an answer to it at the same time. This was done to check if my knowledge is enough or if I should know something else that I'm not taking in consideration. <br>
+Other than that, I used it for minor bugs to check why some mistakes were occurring, like an extra symbol or why a function was not working as intended. <br>
+<br>
+
 Finally, this AI declaration follows the guidelines outlined by DTU: <br>
 https://www.bibliotek.dtu.dk/en/publishing/reference-management/kunstig-intelligens/eksempler
 <br>
