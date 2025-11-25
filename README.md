@@ -34,7 +34,7 @@ be presented to governments or healthcare workers in order to aid them in their 
 <br>
 Generative AI (ChatGPT) was used in creating this project. <br>
 
-**Explicit uses:**
+**Explicit uses**
 - Finding a suitable dataset that aligned with the authors' interests. <br>
 - Providing explanations about the raw dataset. <br>
 - Bug fixing. <br>
@@ -51,18 +51,22 @@ Furthermore, we acknowledge and have considered that generative AI can hinder th
 **Documentation**
 <br>
 <br>
-Generative AI citation: <br>
+<ins>*Generative AI citation:*<ins>
+
 OpenAI. ChatGPT, Nov. 2024 version, OpenAI, https://www.openai.com/
 <br>
 <br>
-*Prompt history of s215065:*
+
+<ins>*Prompt history*<ins>
+
+*s215065:*
 <br>
 https://chatgpt.com/g/g-p-691a120e1c8c8191bd40a2ae23704a19-r-course-project/project <br>
 <br>
 
 Finally, this AI declaration follows the guidelines outlined by DTU: <br>
 https://www.bibliotek.dtu.dk/en/publishing/reference-management/kunstig-intelligens/eksempler
-
-
+<br>
+<br>
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
