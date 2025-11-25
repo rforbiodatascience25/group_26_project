@@ -27,21 +27,22 @@ be presented to governments or healthcare workers in order to aid them in their 
 
 
 ───── ◇◆ **AI DECLARATION** ◆◇ ─────
-
 <br>
-Generative AI (ChatGPT) was used in creating this project. <br> <br>
-*Explicit uses:* <br>
+Generative AI (ChatGPT) was used in creating this project. <br>
+**Explicit uses:**
+<br
 - Finding a suitable dataset that aligned with the authors' interests. <br>
 - Providing explanations about the raw dataset. <br>
 - Bug fixing. <br>
 - Suggesting code improvements. <br>
 - Generating R code (in alignment with the course style and curriculum). <br>
 <br>
-**Responsibility** <br>
+**Responsibility**
+<br>
 We hereby acknowledge that all facts, decisions, and ideas provided by the LLMs were used to guide our writing process, and all decisions regarding the content of the project are entirely our own. <br>
 Furthermore, we acknowledge and have considered that generative AI can hinder the active learning process when it is blindly used as an "answer machine" instead of a "sparing partner". <br>
 <br>
-**Documentation**<br>
+**Documentation**
 <br>
 AI citation: <br>
 OpenAI. ChatGPT, Nov. 2024 version, OpenAI, https://www.openai.com/ <br>
