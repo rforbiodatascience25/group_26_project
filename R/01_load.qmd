@@ -1,5 +1,91 @@
 ---
 title: "01_load"
-format: html
+format:
+  html:
+    self-contained: true
+output-dir: ../results
 ---
+Load libraries:
+
+```{r}
+#libraries
+
+library(tidyverse)
+library(dplyr)
+
+#access to the function for loading the datasets
+source("99_proj_func.R")
+```
+
+Link to the datasets:
+
+<https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data#csv_files>
+
+
+```{r}
+
+# INFO on all 4 data sets + dictionary
+
+LTBI_est_file <- "LTBI_estimates.csv"
+LTBI_est_url <- "https://extranet.who.int/tme/generateCSV.asp?ds=ltbi_estimates"
+
+MDR_RR_est_file <- "MDR_RR_TB_burden_estimates.csv"
+MDR_RR_est_url <- "https://extranet.who.int/tme/generateCSV.asp?ds=mdr_rr_estimates"
+
+TB_age_sex_file <- "TB_burden_age_sex.csv"
+TB_age_sex_url <- "https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex"
+
+TB_countries_file <- "TB_burden_countries.csv"
+TB_countries_url <- "https://extranet.who.int/tme/generateCSV.asp?ds=estimates"
+
+TB_dict_file <- "TB_data_dictionary.csv"
+TB_dict_url <- "https://extranet.who.int/tme/generateCSV.asp?ds=dictionary"
+
+```
+
+
+Load and check each data set:
+
+```{r}
+
+# TB INFECTION ESTIMATES IN HOUSEHOLD CONTACTS
+
+LTBI_est_df <- raw_load_or_download(LTBI_est_file, LTBI_est_url)
+slice_sample(LTBI_est_df, n=5)
+```
+
+
+
+```{r}
+# ICIDENCE ESTIMATES BY AGE GROUP, SEX AND RISK FACTOR
+
+TB_age_sex_df <- raw_load_or_download(TB_age_sex_file, TB_age_sex_url)
+slice_sample(TB_age_sex_df, n=5)
+```
+
+
+```{r}
+# MDR/RR-TB BURDEN ESTIMATES
+
+MDR_RR_est_df <- raw_load_or_download(MDR_RR_est_file, MDR_RR_est_url)
+slice_sample(MDR_RR_est_df, n=5)
+```
+
+
+```{r}
+#TB BURDEN ESTIMATES
+
+TB_countries_df <- raw_load_or_download(TB_countries_file, TB_countries_url)
+slice_sample(TB_countries_df, n=5)
+
+```
+
+
+
+```{r}
+# DICTIONARY
+
+TB_dict <- raw_load_or_download(TB_dict_file, TB_dict_url)
+slice_sample(TB_dict, n=5)
+```
 
