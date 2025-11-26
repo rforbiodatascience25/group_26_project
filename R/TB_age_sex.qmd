@@ -33,6 +33,7 @@ library(tidyverse) #The main package of the course. Allows us to load nifty tabl
 library(dplyr)     #Allows us to make the |> pipelines when manipulating data. 
 library(stringr)   #Allows for string manipulation. Can be good when you e.g. want to rename stuff.
 library(ggplot2)   #For making cool plots. 
+library(forcats)   #fct_reorder() can be used to reorder certain names/ strings. 
 ```
 
 **Loading data:**
@@ -670,46 +671,24 @@ TB_summary
 ```
 
 ```{r}
-#Scatterplot - Sexes and TB cases:
+#Boxplot - Sex-divided amount of TB cases (only for top 10 most infected countries):
 
 ggplot(TB_summary,
        aes(y = summed_TB_cases_pr_100k_best, x = sex)) + 
-  geom_boxplot(alpha = 1) +
-  theme(legend.position = "none")
+  geom_boxplot(alpha = 1, fill = "orange") +
+  theme(legend.position = "none") +
 
-```
-
-```{r}
-ggplot(TB_summary, aes(x = summed_TB_cases_pr_100k_best, y = country)) +
-  geom_point(size = 3, color = "orange") +
-  geom_errorbarh(
-    aes(xmin = summed_TB_cases_pr_100k_min, 
-        xmax = summed_TB_cases_pr_100k_max), height = 0.2) +
   labs(
-    x = "TB cases per 100k\n(Best estimate with min/max)",
-    y = "Country",
-    title = "Top 10 Countries — TB Cases per 100k with error bars"
-  ) +
-  theme_minimal()
+    x = "Sex",
+    y = "Summed amount of TB cases per 100k for each sex for country\n(Best estimate)",
+    title = "Sex-divided amount of TB cases (Top 10 most infected countries)"
+  )
+
 ```
 
 ```{r}
-ggplot(TB_summary, aes(x = summed_TB_cases_pr_100k_best, y = country)) +
-  geom_point(size = 3, color = "orange") +
-  geom_errorbarh(
-    aes(xmin = summed_TB_cases_pr_100k_min, xmax = summed_TB_cases_pr_100k_max),
-    height = 0.2
-  ) +
-  labs(
-    x = "TB cases per 100k\n(Best estimate with min/max)",
-    y = "Country",
-    title = "Top 10 Countries — TB Cases per 100k by Sex"
-  ) +
-  facet_wrap(~ sex) +
-  theme_minimal()
-```
+#Scatter plot for TB cases for different sexes in top 10 most infected countries
 
-```{r}
 ggplot(TB_summary, aes(x = summed_TB_cases_pr_100k_best, y = country, color = sex)) +
   geom_point(position = position_dodge(width = 0.5), size = 3) +
   geom_errorbarh(
@@ -729,6 +708,293 @@ ggplot(TB_summary, aes(x = summed_TB_cases_pr_100k_best, y = country, color = se
 There is not really statistical significance difference between male and females. Males tend to be sightly more infected.
 
 Oddly, the "both" group tends to break out of the correlation for "male" and "female", in some cases.
+
+**Bar chart for TB cases in different age groups:**
+
+```{r}
+unique(TB_age_sex$age_group)
+```
+
+Due to the overlap, it is not possible to do a proper histogram. But a bar chart can be done.
+
+```{r}
+TB_age_sex
+```
+
+```{r}
+TB_age_sex |>
+  group_by(age_group) |>
+  summarise(total_TB_age_grouped = sum(TB_cases_pr_100k_best, na.rm = TRUE)) |>
+  ggplot(aes(x = age_group, y = total_TB_age_grouped)) +
+  geom_col(fill = "orange") +
+  labs(
+    x = "Age group",
+    y = "Total TB cases per 100k",
+    title = "Summed TB cases per age group"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#Same bar plot as above, but with more sensible sorting of x-axis: 
+
+TB_age_sex |>
+  group_by(age_group) |>
+  summarise(total_TB = sum(TB_cases_pr_100k_best, na.rm = TRUE)) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower)  # ensures "all" goes last
+  ) |>
+  ggplot(aes(x = fct_reorder(age_group, age_lower), y = total_TB)) +
+  geom_col(fill = "orange") +
+  labs(
+    x = "Age group",
+    y = "Total TB cases per 100k",
+    title = "Summed TB cases per age group\n(Corrected x-axis order)"
+  ) +
+  theme_minimal()
+
+```
+
+15+, 18+ and 'all' might not be as relevant to have in the plot.
+
+It looks a little bit like 0-14 could be the sum of 0-4 and 5-14 and 10-14 and 5-9:
+
+```{r}
+TB_age_sex |>
+  select(country,age_group, TB_cases_pr_100k_best) |>
+  group_by(country, age_group) |>
+  summarise(age_TB_sum = sum(TB_cases_pr_100k_best)) |>
+  filter(age_group %in% c("0-4","10-14","0-14", "5-9", "5-14"))
+```
+
+However, as we can see above, 0-14 is not merely the sum of 0-4 and 5-9 and 5-14 and 10-14.
+
+```{r}
+#Removing 15+, 18+ and 'all' from the barplot: 
+
+TB_age_sex |>
+  filter(!age_group %in% c("15+", "18+", "all")) |> #Without these 3 groups. 
+  group_by(age_group) |>
+  summarise(total_TB = sum(TB_cases_pr_100k_best, na.rm = TRUE)) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower)  # just in case
+  ) |>
+  ggplot(aes(x = fct_reorder(age_group, age_lower), y = total_TB)) +
+  geom_col(fill = "orange") +
+  labs(
+    x = "Age group",
+    y = "Total TB cases per 100k",
+    title = "Summed TB cases per age group\n(Corrected x-axis order)"
+  ) +
+  theme_minimal()
+
+```
+
+Notably, it is not surprising that 20-24 is lower than the flanking bars, as it spans a shorter set of years and therefore defines a smaller group.
+
+Kids (younger than 15) generally appear to be less infected. This could be explained by the TB vaccine, namely BCG, being more protective in kids.
+
+Source:
+
+<https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/research-innovation/vaccines#:~:text=Neonatal%20BCG%20vaccination%20offers%20partial,the%20majority%20of%20TB%20transmission.>
+
+```{r}
+#Making a version of the bar chart with error bars. 
+TB_age_sex |>
+  filter(!age_group %in% c("15+", "18+", "all")) |> 
+  group_by(age_group) |>
+  summarise(
+    total_best = sum(TB_cases_pr_100k_best, na.rm = TRUE),
+    total_min  = sum(TB_cases_pr_100k_min,  na.rm = TRUE),
+    total_max  = sum(TB_cases_pr_100k_max,  na.rm = TRUE)
+  ) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower)
+  ) |>
+  ggplot(aes(x = fct_reorder(age_group, age_lower), y = total_best)) +
+  
+  # --- BAR ---
+  geom_col(fill = "orange") +
+  
+  # --- ERROR BARS ---
+  geom_errorbar(
+    aes(ymin = total_min, ymax = total_max),
+    width = 0.2
+  ) +
+  
+  labs(
+    x = "Age group",
+    y = "Total TB cases per 100k",
+    title = "Summed TB cases per age group - with min/max error bars"
+  ) +
+  theme_minimal()
+
+```
+
+Finally, we can also do a bar chart for the 10 most TB-infected countries:
+
+```{r}
+#Only for top 10 most TB-infected countries. 
+TB_age_sex |>
+  filter(!age_group %in% c("15+", "18+", "all")) |> #Remove the undesired age-groups
+  filter(country %in% top_10_countries) |> #Getting only the top 10 most infected countries
+  group_by(age_group) |>
+  summarise(
+    total_best = sum(TB_cases_pr_100k_best, na.rm = TRUE),
+    total_min  = sum(TB_cases_pr_100k_min,  na.rm = TRUE),
+    total_max  = sum(TB_cases_pr_100k_max,  na.rm = TRUE)
+  ) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower)
+  ) |>
+  ggplot(aes(x = fct_reorder(age_group, age_lower), y = total_best)) +
+  
+  # --- BAR ---
+  geom_col(fill = "orange") +
+  
+  # --- ERROR BARS ---
+  geom_errorbar(
+    aes(ymin = total_min, ymax = total_max),
+    width = 0.2
+  ) +
+  
+  labs(
+    x = "Age group",
+    y = "Total TB cases per 100k",
+    title = "Summed TB cases per age group - with min/max error bars"
+  ) +
+  theme_minimal()
+```
+
+Again, it is notable that the problem with TB-infections is mainly observed in adults.
+
+It is important to understand that we are working with subsets of the whole data, as we are both working with a subset of the age groups and a subset of the countries (we are only working with the top 10 most infected).
+
+```{r}
+#Total amount of TB cases pr. 100k, summed - Whole dataset. 
+
+TB_age_sex |>
+  group_by(country) |>
+  summarise(
+    total_pr_100k = max(total_TB_cases_pr_100k_best)
+  ) |>
+  summarise(sum_of_TB_pr_100k_citizens = sum(total_pr_100k))
+```
+
+```{r}
+TB_age_sex |>
+  group_by(country) |>
+  summarise(
+    total_TB_cases = sum(TB_cases_best),
+  ) |>
+  summarise(total_TB_cases_worldwide = sum(total_TB_cases)) |> #71744072 total TB cases
+  summarise(normalized = total_TB_cases_worldwide/(sum(TB_age_sex$population_size))*10^5)
+  
+```
+
+```{r}
+TB_age_sex
+```
+
+```{r}
+TB_age_sex |>
+  filter(!age_group %in% c("15+", "18+", "all")) |> #Remove the undesired age-groups
+  filter(country %in% top_10_countries) |> #Getting only the top 10 most infected countries
+  group_by(age_group)  
+```
+
+```{r}
+TB_age_sex |>
+  filter(!age_group %in% c("15+", "18+", "all")) |> 
+  group_by(age_group) |>
+  summarise(
+    total_best = sum(TB_cases_pr_100k_best, na.rm = TRUE),
+    total_min  = sum(TB_cases_pr_100k_min,  na.rm = TRUE),
+    total_max  = sum(TB_cases_pr_100k_max,  na.rm = TRUE)
+  ) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower)
+  )
+```
+
+```{r}
+TB_age_sex |>
+  filter(!age_group %in% c("15+", "18+", "all")) |> 
+  group_by(age_group) |>
+  summarise(
+    total_best = sum(TB_cases_pr_100k_best, na.rm = TRUE),
+    total_min  = sum(TB_cases_pr_100k_min,  na.rm = TRUE),
+    total_max  = sum(TB_cases_pr_100k_max,  na.rm = TRUE)
+  ) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower)
+  )
+```
+
+```{r}
+#Total amount of TB cases pr. 100k, summed. 
+
+TB_age_sex |>
+  group_by(country) |>
+  summarise(
+    total_pr_100k = max(total_TB_cases_pr_100k_best)
+  ) |>
+  summarise(sum_of_TB_pr_100k_citizens = sum(total_pr_100k))
+```
+
+```{r}
+#Total amount of TB cases pr. 100k, summed - Only age groups of interest. 
+
+TB_age_sex |>
+  filter(!age_group %in% c("15+", "18+", "all")) |> 
+  group_by(age_group) |>
+  summarise(
+    total_best = sum(TB_cases_pr_100k_best, na.rm = TRUE),
+    total_min  = sum(TB_cases_pr_100k_min,  na.rm = TRUE),
+    total_max  = sum(TB_cases_pr_100k_max,  na.rm = TRUE)
+  ) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower)
+  ) |>
+  summarise(sum_of_TB_pr_100k_citizens = sum(total_best))
+```
+
+```{r}
+#Total amount of TB cases pr. 100k, summed - Only age groups and countries of interest. 
+
+TB_age_sex |>
+  filter(country %in% top_10_countries) |>
+  filter(!age_group %in% c("15+", "18+", "all")) |> 
+  group_by(age_group) |>
+  summarise(
+    total_best = sum(TB_cases_pr_100k_best, na.rm = TRUE),
+    total_min  = sum(TB_cases_pr_100k_min,  na.rm = TRUE),
+    total_max  = sum(TB_cases_pr_100k_max,  na.rm = TRUE)
+  ) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower)
+  ) |>
+  summarise(sum_of_TB_pr_100k_citizens = sum(total_best))
+```
+
+```{r}
+TB_age_sex |>
+  filter(!age_group %in% c("15+", "18+", "all")) |> 
+  group_by(age_group) |>
+  summarise(
+    total_best = sum(TB_cases_pr_100k_best, na.rm = TRUE),
+    total_min  = sum(TB_cases_pr_100k_min,  na.rm = TRUE),
+    total_max  = sum(TB_cases_pr_100k_max,  na.rm = TRUE)
+  )
+```
 
 ```{r}
 TB_age_sex |>
