@@ -406,15 +406,26 @@ Lastly, we can make a column which shows the amount of TB cases pr. 100k citizen
 ```{r}
 TB_age_sex <- TB_age_sex |>
   group_by(country) |>
-  mutate(
+  
+  #Getting the total sum of TB cases for every country
+  mutate( 
     total_TB_cases_best = sum(TB_cases_best), 
     total_TB_cases_min = sum(TB_cases_min), 
     total_TB_cases_max = sum(TB_cases_max)
-    ) |> #Getting the total sum of TB cases for every country
+    ) |> 
   ungroup() |>
-  mutate(TB_cases_pr_100k_best = total_TB_cases_best/10^5,
-         TB_cases_pr_100k_min = total_TB_cases_min/10^5, 
-         TB_cases_pr_100k_max = total_TB_cases_max/10^5)
+  
+      #For each row (specific age, sex and risk-factor group), 
+      #calculate the pr. 100k amount of cases
+  mutate( 
+        TB_cases_pr_100k_best = TB_cases_best/10^5,
+        TB_cases_pr_100k_min = TB_cases_min/10^5,
+        TB_cases_pr_100k_max = TB_cases_max/10^5,
+        
+        #For each each country, calculate the summed pr. 100k amount of cases
+        total_TB_cases_pr_100k_best = total_TB_cases_best/10^5,
+        total_TB_cases_pr_100k_min = total_TB_cases_min/10^5, 
+        total_TB_cases_pr_100k_max = total_TB_cases_max/10^5)
   
 ```
 
@@ -431,9 +442,202 @@ TB_age_sex |>
 
 OK, we are all clear B)))
 
+Final check - we gotta check if there is an equal amount of observations for every country:
+
+```{r}
+TB_age_sex |>
+  group_by(country) |>
+  summarise(row_count = n())
+```
+
+```{r}
+TB_age_sex |>
+  group_by(country) |>
+  summarise(row_count = n()) |>
+  distinct(row_count)
+```
+
+We now know that every country has around 45-50 rows. This degree of difference is manageable and should not disturb the overall analysis.
+
 That wraps up all of the data cleaning (for real, this time!)
 
-### **Data visualization:**
+# **Data visualization:**
+
+The data:
+
+```{r}
+TB_age_sex
+```
+
+Initial **summary statistics** for the data:
+
+```{r}
+TB_age_sex |> 
+  summarise(
+    n_countries = n_distinct(country),
+    average_total_TB_pr_100k = mean(total_TB_cases_pr_100k_best, na.rm = TRUE),
+    min_total_TB_pr_100k = min(total_TB_cases_pr_100k_best, na.rm = TRUE),
+    max_total_TB_pr_100k = max(total_TB_cases_pr_100k_best, na.rm = TRUE),
+    std_total_TB_pr_100k = sd(total_TB_cases_pr_100k_best, na.rm = TRUE)
+  )
+```
+
+Average amount of TB cases pr. 100k citizens, worldwide:
+
+**3.97 +/- 16.34 TB cases pr. 100k**
+
+(Max: 187, min: 0.00102)
+
+**The 10 countries with the highest amount of TB cases (best estimate) pr. 100k citizens:**
+
+```{r}
+#All countries: 
+TB_age_sex |>
+  group_by(country) |>
+  summarise(
+    #Note: We only want 1 value for each country, so we just use mean().
+    #Even tho the value is constant and country-specific, 
+    #and therefore spans several rows for each country.
+    #So it won't really matter that we use mean(). 
+    total_TB_cases_pr_100k_best = mean(total_TB_cases_pr_100k_best, na.rm = TRUE),
+    population_size_pr_million = mean(population_size)*10^-6
+    ) |>
+  arrange(desc(total_TB_cases_pr_100k_best))
+```
+
+```{r}
+#Only the top 10 countries: 
+TB_age_sex |>
+  group_by(country) |>
+  summarise(
+    #Note: We only want 1 value for each country, so we just use mean().
+    #Even tho the value is constant and country-specific, 
+    #and therefore spans several rows for each country.
+    #So it won't really matter that we use mean(). 
+    total_TB_cases_pr_100k_best = mean(total_TB_cases_pr_100k_best, na.rm = TRUE),
+    population_size_pr_million = mean(population_size)*10^-6
+    ) |>
+  arrange(desc(total_TB_cases_pr_100k_best)) |>
+  slice_head(n = 10) #Picking the top 10. 
+```
+
+```{r}
+#Making an object for storing the top 10 countries with most TB cases pr. 100k: 
+top_10_countries <- TB_age_sex |>
+  group_by(country) |>
+  summarise(
+    total_TB_cases_pr_100k_best = mean(total_TB_cases_pr_100k_best, na.rm = TRUE),
+    population_size_pr_million = mean(population_size)*10^-6
+    ) |>
+  arrange(desc(total_TB_cases_pr_100k_best)) |>
+  slice_head(n = 10) |>
+  pull(country)
+```
+
+```{r}
+# Filter the data
+TB_top <- TB_age_sex |> 
+  filter(country %in% top_10_countries)
+
+#TB_top
+```
+
+**Box plot of countries with the top 10 most TB cases pr. 100k:**
+
+```{r}
+# Boxplot
+ggplot(TB_top, aes(y = country, x = TB_cases_best)) +
+  geom_boxplot(alpha = 0.7, fill = "orange") +
+  labs(x = "TB cases\n(Separated based on different metadata rows)", y = "Country") +
+  theme_minimal()
+```
+
+Note: This boxplot is not really ideal. As several different datapoints just represent different rows.
+
+As 1 dot represents 1 row, that means 'the number of age 15+ people with HIV and TB'.
+
+**Scatter plot with error bars - Top 10 countries with most TB:**
+
+```{r}
+#Making a tibble with only the TB cases pr. 100k for the top 10 countries. 
+TB_top_summary <- TB_top |>
+  group_by(country) |>
+  summarise(
+    mean_best = mean(total_TB_cases_pr_100k_best, na.rm = TRUE), #Ensures only 1 row. 
+    min_val  = min(total_TB_cases_pr_100k_min,  na.rm = TRUE),
+    max_val  = max(total_TB_cases_pr_100k_max,  na.rm = TRUE)
+  )
+
+#Again, note that the values for the countries are constant, so it doesn't really
+#matter if we use max(), min() or mean() to extract them. 
+```
+
+```{r}
+ggplot(TB_top_summary, aes(x = mean_best, y = country)) +
+  geom_point(size = 3, color = "orange") +
+  geom_errorbarh(aes(xmin = min_val, xmax = max_val), height = 0.2) +
+  labs(
+    x = "TB cases per 100k\n(Best estimate with min/max)",
+    y = "Country",
+    title = "Top 10 Countries — TB Cases per 100k with error bars"
+  ) +
+  theme_minimal()
+```
+
+**Scatter plot with error bars - Countries with above 2 TB case pr. 100k:**
+
+We can't simply plot all of the countries, as this would be too cluttered.
+
+But perhaps we are also not really interested in plotting the countries with a few TB cases.
+
+Therefore, we will focus on only plotting countries where the best estimate of TB cases pr. 100k citizens equals or exceeds 1!
+
+```{r}
+TB_summary <- TB_age_sex |> #Updating this tibble to make it cover all countries
+  group_by(country) |>
+  summarise(
+    mean_best = mean(total_TB_cases_pr_100k_best, na.rm = TRUE), #Ensures only 1 row. 
+    min_val  = min(total_TB_cases_pr_100k_min,  na.rm = TRUE),
+    max_val  = max(total_TB_cases_pr_100k_max,  na.rm = TRUE)
+  ) |>
+  filter(mean_best >= 2)
+
+TB_summary
+```
+
+```{r}
+ggplot(TB_summary, aes(x = mean_best, y = country)) +
+  geom_point(size = 3, color = "orange") +
+  geom_errorbarh(aes(xmin = min_val, xmax = max_val), height = 0.2) +
+  labs(
+    x = "TB cases per 100k\n(Best estimate with min/max)",
+    y = "Country",
+    title = "TB Cases per 100k with error bars\n(Only countries with 2 <= TB case pr. 100k)"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#Sorted plot:
+ggplot(
+  TB_summary |> arrange(mean_best),  # order by mean
+  aes(x = mean_best, y = fct_reorder(country, mean_best))
+) +
+  geom_errorbarh(aes(xmin = min_val, xmax = max_val), height = 0.2) +
+  geom_point(size = 1.5, color = "orange") +
+  labs(
+    x = "TB cases per 100k\n(Best estimate with min/max)",
+    y = "Country",
+    title = "TB Cases per 100k with error bars\n(Only countries with 2 <= TB case pr. 100k)"
+  ) +
+  #theme(axis.text.y = element_text(size = 10, margin = margin(r = 5))) +
+  theme(
+  axis.text.y = element_text(size = 10, margin = margin(r = 6)),
+  axis.ticks.y = element_line(),
+  panel.grid.major.y = element_blank()
+) +
+  theme_minimal()
+```
 
 **Box plot - Summed TB cases for sexes:**
 
@@ -452,7 +656,7 @@ ggplot(TB_age_sex,
 ```{r}
 TB_age_sex |>
   group_by(country) |>
-  summarise(average = mean(TB_cases_pr_100k_best, na.rm = TRUE)) |>
+  summarise(average = mean(TB_cases_pr_100k_best, na.rm = TRUE)) |> #Just taking the mean for now, even tho it is a constant value for every country. 
   arrange(desc(average))
 
 ```
@@ -627,7 +831,7 @@ ggplot(TB_cases_by_sex,
 
 ------------------------------------------------------------------------
 
-### Data Visualization II (PCA, heatmap)
+# Data Visualization II (PCA, heatmap)
 
 ```{r}
 
