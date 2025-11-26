@@ -402,7 +402,16 @@ Note: The population size is kept constant in all rows, but e.g., Afghanistan ha
 
 **Data augmentation:**
 
-Lastly, we can make a column which shows the amount of TB cases pr. 100k citizens in the country. This normalization will help make the TB cases more comparable for all countries, and makes the comparison more indepedent on the population size.
+Lastly, we can make a column which shows the amount of TB cases pr. 100k citizens in the country. This normalization will help make the TB cases more comparable for all countries, and makes the comparison more independent on the population size.
+
+```{r}
+#Regarding scientific number notation (3.67e5):
+
+options(scipen = 30) #This increases the amount of digits before switching to,
+#scientific notation. 
+
+#30 is just used as a high number. 
+```
 
 ```{r}
 TB_age_sex <- TB_age_sex |>
@@ -414,19 +423,18 @@ TB_age_sex <- TB_age_sex |>
     total_TB_cases_min = sum(TB_cases_min), 
     total_TB_cases_max = sum(TB_cases_max)
     ) |> 
-  ungroup() |>
   
       #For each row (specific age, sex and risk-factor group), 
       #calculate the pr. 100k amount of cases
   mutate( 
-        TB_cases_pr_100k_best = TB_cases_best/10^5,
-        TB_cases_pr_100k_min = TB_cases_min/10^5,
-        TB_cases_pr_100k_max = TB_cases_max/10^5,
+        TB_cases_pr_100k_best = TB_cases_best/population_size*10^5,
+        TB_cases_pr_100k_min = TB_cases_min/population_size*10^5,
+        TB_cases_pr_100k_max = TB_cases_max/population_size*10^5,
         
         #For each each country, calculate the summed pr. 100k amount of cases
-        total_TB_cases_pr_100k_best = total_TB_cases_best/10^5,
-        total_TB_cases_pr_100k_min = total_TB_cases_min/10^5, 
-        total_TB_cases_pr_100k_max = total_TB_cases_max/10^5)
+        total_TB_cases_pr_100k_best = total_TB_cases_best/population_size*10^5,
+        total_TB_cases_pr_100k_min = total_TB_cases_min/population_size*10^5, 
+        total_TB_cases_pr_100k_max = total_TB_cases_max/population_size*10^5)
   
 ```
 
@@ -483,11 +491,64 @@ TB_age_sex |>
   )
 ```
 
-Average amount of TB cases pr. 100k citizens, worldwide:
+**Top 10 countries with most TB cases:**
 
-**3.97 +/- 16.34 TB cases pr. 100k**
+```{r}
+top_10_countries <- TB_age_sex |>
+  group_by(country) |>
+  summarise(total_TB = first(total_TB_cases_best)) |>
+  arrange(desc(total_TB)) |>
+  slice_head(n = 10) |> 
+  pull(country)
 
-(Max: 187, min: 0.00102)
+print(top_10_countries)
+```
+
+```{r}
+# Filter the data
+TB_age_sex |> 
+  filter(country %in% top_10_countries)
+
+```
+
+```{r}
+TB_age_sex |>
+  filter(country %in% top_10_countries) |>
+  group_by(country)
+```
+
+```{r}
+TB_summary <- TB_age_sex |>
+  filter(country %in% top_10_countries) |>
+  group_by(country) |>
+  summarise(
+    mean_best = sum(TB_cases_best, na.rm = TRUE), #Sum of TB cases for this country 
+    min_val  = sum(TB_cases_min, na.rm = TRUE),
+    max_val  = sum(TB_cases_max, na.rm = TRUE),
+    
+    #pr. 100k values
+    mean_best_100k = first(total_TB_cases_pr_100k_best), #Ensures only 1 row
+    min_val_100k  = first(total_TB_cases_pr_100k_min),
+    max_val_100k  = first(total_TB_cases_pr_100k_max),
+  )
+
+TB_summary
+```
+
+```{r}
+options(scipen = 0)
+
+ggplot(TB_summary, aes(x = mean_best, y = country)) +
+  geom_point(size = 3, color = "orange") +
+  geom_errorbarh(aes(xmin = min_val, xmax = max_val), height = 0.2) +
+  labs(
+    x = "TB cases\n(Best estimate with min/max)",
+    y = "Country",
+    title = "Top 10 Countries - Total TB cases, with error bars"
+  ) +
+  theme_minimal()
+
+```
 
 **The 10 countries with the highest amount of TB cases (best estimate) pr. 100k citizens:**
 
@@ -525,8 +586,8 @@ TB_age_sex |>
 ```
 
 ```{r}
-#Making an object for storing the top 10 countries with most TB cases pr. 100k: 
-top_10_countries <- TB_age_sex |>
+#Making an object for storing the top 10 countries with most TB cases: 
+top_10_countries_100k <- TB_age_sex |>
   group_by(country) |>
   summarise(
     total_TB_cases_pr_100k_best = mean(total_TB_cases_pr_100k_best, na.rm = TRUE),
@@ -535,13 +596,12 @@ top_10_countries <- TB_age_sex |>
   arrange(desc(total_TB_cases_pr_100k_best)) |>
   slice_head(n = 10) |>
   pull(country)
-
 ```
 
 ```{r}
 # Filter the data
 TB_top <- TB_age_sex |> 
-  filter(country %in% top_10_countries)
+  filter(country %in% top_10_countries_100k)
 
 #TB_top
 ```
@@ -564,7 +624,7 @@ As 1 dot represents 1 row, that means 'the number of age 15+ people with HIV and
 
 ```{r}
 #Making a tibble with only the TB cases pr. 100k for the top 10 countries. 
-TB_top_summary <- TB_top |>
+TB_summary <- TB_top |>
   group_by(country) |>
   summarise(
     mean_best = mean(total_TB_cases_pr_100k_best, na.rm = TRUE), #Ensures only 1 row. 
@@ -577,7 +637,7 @@ TB_top_summary <- TB_top |>
 ```
 
 ```{r}
-ggplot(TB_top_summary, aes(x = mean_best, y = country)) +
+ggplot(TB_summary, aes(x = mean_best, y = country)) +
   geom_point(size = 3, color = "orange") +
   geom_errorbarh(aes(xmin = min_val, xmax = max_val), height = 0.2) +
   labs(
@@ -664,7 +724,7 @@ TB_summary <- TB_age_sex |>
             summed_TB_cases_pr_100k_best = sum(TB_cases_pr_100k_best),
             summed_TB_cases_pr_100k_max = sum(TB_cases_pr_100k_max),
             ) |> 
-  filter(country %in% top_10_countries)
+  filter(country %in% top_10_countries_100k)
 
 
 TB_summary
@@ -774,7 +834,7 @@ However, as we can see above, 0-14 is not merely the sum of 0-4 and 5-9 and 5-14
 #Removing 15+, 18+ and 'all' from the barplot: 
 
 TB_age_sex |>
-  filter(!age_group %in% c("15+", "18+", "all")) |> #Without these 3 groups. 
+  filter(!age_group %in% c("0-14","15+", "18+", "all")) |> #Without these 4 groups. 
   group_by(age_group) |>
   summarise(total_TB = sum(TB_cases_pr_100k_best, na.rm = TRUE)) |>
   mutate(
@@ -803,7 +863,7 @@ Source:
 ```{r}
 #Making a version of the bar chart with error bars. 
 TB_age_sex |>
-  filter(!age_group %in% c("15+", "18+", "all")) |> 
+  filter(!age_group %in% c("15+", "18+", "all", "0-14")) |> 
   group_by(age_group) |>
   summarise(
     total_best = sum(TB_cases_pr_100k_best, na.rm = TRUE),
@@ -839,8 +899,8 @@ Finally, we can also do a bar chart for the 10 most TB-infected countries:
 ```{r}
 #Only for top 10 most TB-infected countries. 
 TB_age_sex |>
-  filter(!age_group %in% c("15+", "18+", "all")) |> #Remove the undesired age-groups
-  filter(country %in% top_10_countries) |> #Getting only the top 10 most infected countries
+  filter(!age_group %in% c("15+", "18+", "all","0-14")) |> #Remove the undesired age-groups
+  filter(country %in% top_10_countries_100k) |> #Getting only the top 10 most infected countries
   group_by(age_group) |>
   summarise(
     total_best = sum(TB_cases_pr_100k_best, na.rm = TRUE),
@@ -872,6 +932,8 @@ TB_age_sex |>
 
 Again, it is notable that the problem with TB-infections is mainly observed in adults.
 
+--------------------------------------------------------------------------------------------------------------------------------
+
 It is important to understand that we are working with subsets of the whole data, as we are both working with a subset of the age groups and a subset of the countries (we are only working with the top 10 most infected).
 
 ```{r}
@@ -896,6 +958,37 @@ TB_age_sex |>
   
 ```
 
+--------------------------------------------------------------------------------------------------------------------------------
+
+**TB cases relative to risk factors:**
+
+```{r}
+TB_age_sex |>
+  filter(country %in% top_10_countries_100k)
+```
+
+We can examine the ratio of risk factor-infected relative to non-risk factor-infected.
+
+```{r}
+TB_age_sex |> 
+  filter(country %in% top_10_countries_100k) |>
+  group_by(country) |>
+  summarise(
+    non_risk = sum(TB_cases_best[risk_factor == "no risk factor"], na.rm = TRUE),
+    risk     = sum(TB_cases_best[risk_factor != "no risk factor"], na.rm = TRUE),
+    ratio    = risk / non_risk,
+    population = first(population_size), #It is in multiple of the rows of the same num.
+    #So we use first() to extract it from the first row. 
+    
+    risk_pr_100k = risk/population*10^5, 
+    non_risk_pr_100k = non_risk/population*10^5
+  ) |>
+  arrange(desc(ratio))
+
+```
+
+**TB cases relative to risk factors AND sex:**
+
 ```{r}
 TB_age_sex
 ```
@@ -903,7 +996,7 @@ TB_age_sex
 ```{r}
 TB_age_sex |>
   filter(!age_group %in% c("15+", "18+", "all")) |> #Remove the undesired age-groups
-  filter(country %in% top_10_countries) |> #Getting only the top 10 most infected countries
+  filter(country %in% top_10_countries_100k) |> #Getting only the top 10 most infected countries
   group_by(age_group)  
 ```
 
@@ -970,7 +1063,7 @@ TB_age_sex |>
 #Total amount of TB cases pr. 100k, summed - Only age groups and countries of interest. 
 
 TB_age_sex |>
-  filter(country %in% top_10_countries) |>
+  filter(country %in% top_10_countries_100k) |>
   filter(!age_group %in% c("15+", "18+", "all")) |> 
   group_by(age_group) |>
   summarise(
