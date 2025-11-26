@@ -7,9 +7,9 @@ WHO 2025 data on Tuberculosis, data description
 
 In this script, it's intended to give an explanation on data features, using different methods and graphs. The provided data description is based on three datasets:
 
-- The joined dataset which only haves information from 2024
-- The joined dataset which contains information from 2015 to 2024
-- The WHO TB burden estimates \[\>1Mb\] dataset, as it contains information from previous years
+-   The joined dataset which only haves information from 2024
+-   The joined dataset which contains information from 2015 to 2024
+-   The WHO TB burden estimates \[\>1Mb\] dataset, as it contains information from previous years
 
 ------------------------------------------------------------------------
 
@@ -74,3 +74,21 @@ TB_burden
 ------------------------------------------------------------------------
 
 It's late, hope someone sees this before me, maybe some statistics and graphs would be fine, but nothing that complex, complex stuff should go into analysis part.
+
+**Description for TB_age_sex_joined**
+
+This dataset contains the number of TB cases across different countries, categorized by age group and gender. It also includes cases per 100,000 population, enabling standardized and comparable analysis between countries.
+
+TB cases per 100k
+
+```{r}
+# Filter the data
+TB_top <- TB_age_sex |> 
+  filter(country %in% top_10_countries)
+
+# Countries with the top 10 most TB cases pr. 100k:
+ggplot(TB_top, aes(y = country, x = TB_cases_best)) +
+  geom_boxplot(alpha = 0.7, fill = "orange") +
+  labs(x = "TB cases\n(Separated based on different metadata rows)", y = "Country") +
+  theme_minimal()
+```
