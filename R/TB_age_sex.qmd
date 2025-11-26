@@ -42,7 +42,7 @@ WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0
 ```{r}
 #Loading age and sex and risk group data (2024 only): 
 
-data_folder <- "Data"
+data_folder <- "../Data"
 data_file   <- file.path(data_folder, "TB_age_sex.csv")
 data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex"
 
@@ -323,7 +323,7 @@ TB_age_sex
 
 ------------------------------------------------------------------------
 
-As the very last step, we wanna merge some of the data from the other datasets onto this dataset.
+As one of the last steps, we wanna merge some of the data from the other datasets onto this dataset.
 
 Specifically, we would like to obtain the information regarding the total population of each country, and merge it into our tibble.
 
@@ -335,7 +335,7 @@ Note: This dataset contains data from years other than 2024, so we can either fi
 
 ```{r}
 
-data_folder <- "Data"
+#data_folder <- "../Data" #Was already defined 
 data_file   <- file.path(data_folder, "TB_burden.csv")
 data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=estimates"
 
@@ -381,6 +381,7 @@ TB_burden
 ```
 
 ```{r}
+#Making dataset containing all population data (2024) for every country. 
 population_data_2024 <- TB_burden |>
   select(country, e_pop_num, year) |>
   filter(year == 2024) |>
@@ -398,15 +399,27 @@ TB_age_sex
 
 Note: The population size is kept constant in all rows, but e.g., Afghanistan has several rows for e.g. different age groups, where the TB cases varies - so TB varies, but population size is constant for each row (country specific).
 
+**Data augmentation:**
+
 Lastly, we can make a column which shows the amount of TB cases pr. 100k citizens in the country. This normalization will help make the TB cases more comparable for all countries, and makes the comparison more indepedent on the population size.
 
 ```{r}
-TB_age_sex |>
+TB_age_sex <- TB_age_sex |>
   group_by(country) |>
-  mutate(total_TB_cases_best = sum(TB_cases_best), total_TB_cases_min = sum(TB_cases_min), total_TB_cases_max = sum(TB_cases_max)) |> #Getting the total sum of TB cases for every country
+  mutate(
+    total_TB_cases_best = sum(TB_cases_best), 
+    total_TB_cases_min = sum(TB_cases_min), 
+    total_TB_cases_max = sum(TB_cases_max)
+    ) |> #Getting the total sum of TB cases for every country
   ungroup() |>
-  mutate(TB_cases_pr_100k_best = total_TB_cases_best/10^6, TB_cases_pr_100k_min = total_TB_cases_min/10^6, TB_cases_pr_100k_max = total_TB_cases_max/10^6)
+  mutate(TB_cases_pr_100k_best = total_TB_cases_best/10^5,
+         TB_cases_pr_100k_min = total_TB_cases_min/10^5, 
+         TB_cases_pr_100k_max = total_TB_cases_max/10^5)
   
+```
+
+```{r}
+TB_age_sex
 ```
 
 Final (sanity) check if we have any NA values:
@@ -421,6 +434,48 @@ OK, we are all clear B)))
 That wraps up all of the data cleaning (for real, this time!)
 
 ### **Data visualization:**
+
+**Box plot - Summed TB cases for sexes:**
+
+```{r}
+#Boxplot - Sexes and TB cases:
+
+#Note: Log-transformed y-axis. Otherwise we would have values scaling up to 2 million. 
+
+ggplot(TB_age_sex,
+       aes(y = log(TB_cases_best), x = sex)) + 
+  geom_boxplot(alpha = 1) +
+  theme(legend.position = "none")
+
+```
+
+```{r}
+TB_age_sex |>
+  group_by(country) |>
+  summarise(average = mean(TB_cases_pr_100k_best, na.rm = TRUE)) |>
+  arrange(desc(average))
+
+```
+
+```{r}
+ggplot(TB_age_sex,
+       aes(x = TB_cases_pr_100k_best,
+           y = population_size)) +
+  geom_point(alpha = 0.6) +
+  labs(
+    x = "TB cases per 100k (best estimate)",
+    y = "Population size",
+    title = "TB incidence vs population size"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(TB_age_sex,
+       aes(y = country, x = TB_cases_pr_100k_best)) +
+  geom_boxplot(alpha = 1) +
+  theme(legend.position = "none")
+```
 
 ```{r}
 #Box plot for all countries: 
@@ -572,61 +627,6 @@ ggplot(TB_cases_by_sex,
 
 ------------------------------------------------------------------------
 
-Loading the 3 other datasets (remove later):
-
-```{r}
-#| echo: true
-#| eval: true
-
-#WHO TB burden estimates [>1Mb]
-TB_burden <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=estimates",
-                      show_col_types = FALSE)
-
-# Write the data to disk
-write_csv(x = TB_burden,
-          file = "Data/TB_burden_data.csv")  
-
-TB_burden
-
-```
-
-```{r}
-#WHO MDR/RR-TB burden estimates: 
-
-#MDR = Multidrug-resistant tuberculosis
-#RR = Rifampicin-resistant tuberculosis
-
-#| echo: true
-#| eval: true
-
-TB_drug_res <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=mdr_rr_estimates",
-                      show_col_types = FALSE)
-
-# Write the data to disk
-write_csv(x = TB_drug_res,
-          file = "Data/TB_drug_resistance_data.csv")  
-
-TB_drug_res
-```
-
-```{r}
-#WHO TB infection estimates in household contacts:
-
-#| echo: true
-#| eval: true
-
-TB_contact <- read_csv(file = "https://extranet.who.int/tme/generateCSV.asp?ds=ltbi_estimates",
-                      show_col_types = FALSE)
-
-# Write the data to disk
-write_csv(x = TB_contact,
-          file = "Data/TB_contact_data.csv")  
-
-TB_contact
-```
-
-------------------------------------------------------------------------
-
 ### Data Visualization II (PCA, heatmap)
 
 ```{r}
@@ -639,7 +639,7 @@ TB_PCA_prep <- TB_age_sex |>
   group_by(country) |>
   mutate(total_TB_cases_best = sum(TB_cases_best), total_TB_cases_min = sum(TB_cases_min), total_TB_cases_max = sum(TB_cases_max)) |> #Getting the total sum of TB cases for every country
   ungroup() |>
-  mutate(TB_cases_pr_100k_best = total_TB_cases_best/10^6, TB_cases_pr_100k_min = total_TB_cases_min/10^6, TB_cases_pr_100k_max = total_TB_cases_max/10^6)
+  mutate(TB_cases_pr_100k_best = total_TB_cases_best/10^5, TB_cases_pr_100k_min = total_TB_cases_min/10^5, TB_cases_pr_100k_max = total_TB_cases_max/10^5)
 ```
 
 PCA is carries out across countries to check different TB_profiles across countries
