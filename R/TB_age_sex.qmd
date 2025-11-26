@@ -490,6 +490,8 @@ Average amount of TB cases pr. 100k citizens, worldwide:
 
 **The 10 countries with the highest amount of TB cases (best estimate) pr. 100k citizens:**
 
+It gets extremely cluttered if we try to visualize data for every country. But we are also mostly interested in the countries that have the most TB cases.
+
 ```{r}
 #All countries: 
 TB_age_sex |>
@@ -532,6 +534,7 @@ top_10_countries <- TB_age_sex |>
   arrange(desc(total_TB_cases_pr_100k_best)) |>
   slice_head(n = 10) |>
   pull(country)
+
 ```
 
 ```{r}
@@ -639,19 +642,93 @@ ggplot(
   theme_minimal()
 ```
 
-**Box plot - Summed TB cases for sexes:**
+**Box plot - TB cases for sexes:**
 
 ```{r}
-#Boxplot - Sexes and TB cases:
-
-#Note: Log-transformed y-axis. Otherwise we would have values scaling up to 2 million. 
+#Boxplot - Sexes and TB cases | Only top 10 most TB infected countries:
 
 ggplot(TB_age_sex,
-       aes(y = log(TB_cases_best), x = sex)) + 
+       aes(y = TB_cases_pr_100k_best, x = sex)) + 
+  geom_boxplot(alpha = 1) +
+  theme(legend.position = "none")
+```
+
+The strak contrast between infection and low-infection countries skews the boxplots. It is therefore important to focus more concretely on some of the high-infection countries.
+
+```{r}
+#Top 10 countries, amount of TB cases pr. 100k, segmented into sex: 
+TB_summary <- TB_age_sex |>
+  group_by(sex, country) |>
+  summarise(summed_TB_cases_pr_100k_min = sum(TB_cases_pr_100k_min),
+            summed_TB_cases_pr_100k_best = sum(TB_cases_pr_100k_best),
+            summed_TB_cases_pr_100k_max = sum(TB_cases_pr_100k_max),
+            ) |> 
+  filter(country %in% top_10_countries)
+
+
+TB_summary
+```
+
+```{r}
+#Scatterplot - Sexes and TB cases:
+
+ggplot(TB_summary,
+       aes(y = summed_TB_cases_pr_100k_best, x = sex)) + 
   geom_boxplot(alpha = 1) +
   theme(legend.position = "none")
 
 ```
+
+```{r}
+ggplot(TB_summary, aes(x = summed_TB_cases_pr_100k_best, y = country)) +
+  geom_point(size = 3, color = "orange") +
+  geom_errorbarh(
+    aes(xmin = summed_TB_cases_pr_100k_min, 
+        xmax = summed_TB_cases_pr_100k_max), height = 0.2) +
+  labs(
+    x = "TB cases per 100k\n(Best estimate with min/max)",
+    y = "Country",
+    title = "Top 10 Countries — TB Cases per 100k with error bars"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(TB_summary, aes(x = summed_TB_cases_pr_100k_best, y = country)) +
+  geom_point(size = 3, color = "orange") +
+  geom_errorbarh(
+    aes(xmin = summed_TB_cases_pr_100k_min, xmax = summed_TB_cases_pr_100k_max),
+    height = 0.2
+  ) +
+  labs(
+    x = "TB cases per 100k\n(Best estimate with min/max)",
+    y = "Country",
+    title = "Top 10 Countries — TB Cases per 100k by Sex"
+  ) +
+  facet_wrap(~ sex) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(TB_summary, aes(x = summed_TB_cases_pr_100k_best, y = country, color = sex)) +
+  geom_point(position = position_dodge(width = 0.5), size = 3) +
+  geom_errorbarh(
+    aes(xmin = summed_TB_cases_pr_100k_min, xmax = summed_TB_cases_pr_100k_max),
+    position = position_dodge(width = 0.5),
+    height = 0.4
+  ) +
+  labs(
+    x = "TB cases per 100k\n(Best estimate with min/max)",
+    y = "Country",
+    title = "TB cases pr. 100k by sex\n(Countries with top 10 most TB cases)"
+  ) +
+  theme_minimal()
+
+```
+
+There is not really statistical significance difference between male and females. Males tend to be sightly more infected.
+
+Oddly, the "both" group tends to break out of the correlation for "male" and "female", in some cases.
 
 ```{r}
 TB_age_sex |>
