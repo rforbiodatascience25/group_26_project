@@ -3,3 +3,16 @@ title: "05_analysis_1"
 format: html
 ---
 
+possible questions
+
+how do TB incidence and mortality trends vary across countries and over time?
+
+how do MDR/RR-TB trends compare to overall TB trends?
+
+how are household TB infection rates distributed globally?
+
+is higher TB incidence associated with higher household infection?
+
+how has household infection changed over time?
+
+which countries have the highest TB data gaps?
