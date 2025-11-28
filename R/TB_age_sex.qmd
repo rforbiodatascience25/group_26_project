@@ -593,7 +593,7 @@ TB_top <- TB_age_sex |>
 **Box plot of countries with the top 10 most TB cases pr. 100k:**
 
 ```{r}
-# Boxplot
+# Boxplot (Added to 04_describe)
 ggplot(TB_top, aes(y = country, x = TB_cases_best)) +
   geom_boxplot(alpha = 0.7, fill = "orange") +
   labs(x = "TB cases\n(Separated based on different metadata rows)", y = "Country") +
@@ -1612,7 +1612,7 @@ print(TB_cases_by_sex)
 ```
 
 ```{r}
-#Box plot for sex-segmented data: 
+#Box plot for sex-segmented data: (Added to 04_describe)
 
 #| echo: true
 #| eval: true
