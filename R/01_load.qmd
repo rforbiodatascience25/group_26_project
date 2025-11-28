@@ -5,7 +5,8 @@ format:
     self-contained: true
 output-dir: ../results
 ---
-Load libraries:
+
+**Load libraries:**
 
 ```{r}
 #libraries
@@ -15,12 +16,25 @@ library(dplyr)
 
 #access to the function for loading the datasets
 source("99_proj_func.R")
+
+
+#############
+
 ```
 
-Link to the datasets:
+Note: We are e.g. importing the raw_load_or_download() function which we imported from, '99_proj_func.R'.
+
+It uses a *very* sparse amount of base R code and helps load the files. The code is designed not to start downloading the data online (through url) if it has already been downloaded and saved in the Data folder.
+
+We are therefore technically breaking the rule of not using base R to save computational resources for the cluster.
+
+(With that being said, we could easily have designed a simpler/lazier script, which would just waste resources downloading the dataset every time).
+
+**Link to the datasets:**
 
 <https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data#csv_files>
 
+**Loading the 4 main datasets:**
 
 ```{r}
 
@@ -43,7 +57,6 @@ TB_dict_url <- "https://extranet.who.int/tme/generateCSV.asp?ds=dictionary"
 
 ```
 
-
 Load and check each data set:
 
 ```{r}
@@ -54,15 +67,14 @@ LTBI_est_df <- raw_load_or_download(LTBI_est_file, LTBI_est_url)
 slice_sample(LTBI_est_df, n=5)
 ```
 
-
-
 ```{r}
-# ICIDENCE ESTIMATES BY AGE GROUP, SEX AND RISK FACTOR
+# INCIDENCE ESTIMATES BY AGE GROUP, SEX AND RISK FACTOR
 
 TB_age_sex_df <- raw_load_or_download(TB_age_sex_file, TB_age_sex_url)
 slice_sample(TB_age_sex_df, n=5)
 ```
 
+Note: This is the only dataset that ONLY contains data from **2024**.
 
 ```{r}
 # MDR/RR-TB BURDEN ESTIMATES
@@ -71,6 +83,13 @@ MDR_RR_est_df <- raw_load_or_download(MDR_RR_est_file, MDR_RR_est_url)
 slice_sample(MDR_RR_est_df, n=5)
 ```
 
+Note:
+
+**MDR-TB** = Multidrug-resistant tuberculosis
+
+**RR-TB** = Rifampicin-resistant tuberculosis
+
+(Rifampicin is a group of antibiotics).
 
 ```{r}
 #TB BURDEN ESTIMATES
@@ -80,8 +99,6 @@ slice_sample(TB_countries_df, n=5)
 
 ```
 
-
-
 ```{r}
 # DICTIONARY
 
@@ -89,3 +106,30 @@ TB_dict <- raw_load_or_download(TB_dict_file, TB_dict_url)
 slice_sample(TB_dict, n=5)
 ```
 
+The dictionary file is part of the official TB 2025 WHO data.
+
+It contains an explanation of some of the terms used in the data.
+
+It is advisable to quickly skim through it before proceeding.
+
+```{r}
+TB_dict
+```
+
+**Final remark:**
+
+We will later separate the analysis into **05_analysis_1** and **05_analysis_2**.
+
+***05_analysis_1:***
+
+\***TB infection estimates in household contacts**
+
+\***MDR/RR-TB burden estimates**
+
+\***TB Burden Estimates**
+
+***05_analysis_2:***
+
+\***Incidence estimates by age group, sex, and risk factor**
+
+(2024 data only).
