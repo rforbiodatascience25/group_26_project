@@ -92,3 +92,19 @@ ggplot(TB_top, aes(y = country, x = TB_cases_best)) +
   labs(x = "TB cases\n(Separated based on different metadata rows)", y = "Country") +
   theme_minimal()
 ```
+
+
+**Description for TB_10_years_joined**
+
+```{r}
+TB_10_years_joined |> glimpse()
+df10 <- TB_10_years_joined
+```
+
+```{r}
+df10 %>% count(country)
+df10 %>% count(year)
+```
+
+
+
