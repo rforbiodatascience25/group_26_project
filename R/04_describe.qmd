@@ -82,11 +82,30 @@ This dataset contains the number of TB cases across different countries, categor
 TB cases per 100k
 
 ```{r}
-# Filter the data
+#Summary statistics for top10 countries with highes TB cases
+TB_summary <- TB_age_sex |>
+  filter(country %in% top_10_countries) |>
+  group_by(country) |>
+  summarise(
+    mean_best = sum(TB_cases_best, na.rm = TRUE), #Sum of TB cases for this country 
+    min_val  = sum(TB_cases_min, na.rm = TRUE),
+    max_val  = sum(TB_cases_max, na.rm = TRUE),
+    
+    #pr. 100k values
+    mean_best_100k = first(total_TB_cases_pr_100k_best), #Ensures only 1 row
+    min_val_100k  = first(total_TB_cases_pr_100k_min),
+    max_val_100k  = first(total_TB_cases_pr_100k_max),
+  )
+
+```
+
+```{r}
+# Box plot Countries with the top 10 most TB cases pr. 100k:
+
 TB_top <- TB_age_sex |> 
   filter(country %in% top_10_countries)
 
-# Countries with the top 10 most TB cases pr. 100k:
+
 ggplot(TB_top, aes(y = country, x = TB_cases_best)) +
   geom_boxplot(alpha = 0.7, fill = "orange") +
   labs(x = "TB cases\n(Separated based on different metadata rows)", y = "Country") +
