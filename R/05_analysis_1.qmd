@@ -118,7 +118,7 @@ world_map <- map_data("world") %>%
 # Join Data with Map
 map_data_joined <- left_join(world_map, df_2024, by = "country")
 
-# Plot Fig 3.8
+# Plot
 p_map <- ggplot(map_data_joined, aes(x = long, y = lat, group = group)) +
   geom_polygon(aes(fill = Preventive_Tx_Pct), color = "white", size = 0.1) +
   scale_fill_gradientn(
