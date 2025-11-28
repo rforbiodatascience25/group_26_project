@@ -155,7 +155,7 @@ Specifically, we would like to obtain the information ####
 
 ```{r}
 TB_10_years <- inner_join(TB_burden, mdr_rr_data, by = c("country", "year"))
-TB_10_years <- inner_join(TB_10_years, ltbi_data)
+TB_10_years <- inner_join(TB_10_years, ltbi_data, by = c("country", "year"))
 TB_10_years
 ```
 
