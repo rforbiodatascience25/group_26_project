@@ -5,33 +5,40 @@ format: html
 
 WHO 2025 data on Tuberculosis.
 
-In this script, we will be working with the data augmentation (where requiered) and joining of data into two final tables, one containing the information from WHO TB burden estimates [>1Mb], WHO MDR/RR-TB burden estimates and WHO TB infection estimates in household contacts. The other one will include the formation from WHO TB incidence estimates disaggregated by age group, sex and risk factor [>0.5Mb] as it's only information from 2024.
+In this script, we will be working with the data augmentation (where required) and joining of data into two final tables.
+
+We will create one containing the information from the 3 datasets, which spans all of the years:
+
+(WHO TB burden estimates \[\>1Mb\] & WHO MDR/RR-TB burden estimates & WHO TB infection estimates in household contacts)
+
+-   This will lead to the data being worked with in **05_analysis_1.qmd**
+
+The other augmented dataset will include data from the remaining dataset.
+
+(i.e. WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\])
+
+As it only contains information from 2024, and would therefore be hard(er) to incoperate into the analysis of the other 3 datasets, which contains data from several years.
+
+However, we will still join some population data from 2024 from the 'WHO TB burden estimates \[\>1Mb\]' dataset.
+
+-   This will lead to the data being worked with in **06_analysis_2.qmd**
 
 ------------------------------------------------------------------------
-
-**Note to self - add this in all code chunks when wrapping up:**
-
-```{r}
-#| echo: true
-#| eval: true
-```
 
 **Loading relevant libraries:**
 
 ```{r}
 library("tidyverse") 
-```
 
-```{r}
 #Access to the function for loading the datasets and to save them
 source("99_proj_func.R")
 ```
 
 ------------------------------------------------------------------------
 
-**Loading data:**
+### **Loading data:**
 
-WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]
+**WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]:**
 
 ```{r}
 #Loading age and sex and risk group data (2024 only): 
@@ -40,11 +47,11 @@ data_file   <- "TB_age_sex.tsv"
 TB_age_sex  <- load_data(data_file)
 
 #Display the data: 
-TB_age_sex
+slice_sample(TB_age_sex, n=5)
 
 ```
 
-WHO TB burden estimates \[\>1Mb\]:
+**WHO TB burden estimates \[\>1Mb\]:**
 
 ```{r}
 #Loading TB burden estimates: 
@@ -53,10 +60,10 @@ data_file   <- "TB_burden.tsv"
 TB_burden   <- load_data(data_file)
 
 #Display the data: 
-TB_burden
+slice_sample(TB_burden, n=5)
 ```
 
-WHO MDR/RR-TB burden estimates:
+**WHO MDR/RR-TB burden estimates:**
 
 ```{r}
 #Loading MDR/RR-TB burden estimates
@@ -65,10 +72,10 @@ data_file     <- "MDR_RR_burden_estimates.tsv"
 mdr_rr_data   <- load_data(data_file)
 
 #Display the data_
-mdr_rr_data
+slice_sample(mdr_rr_data, n=5)
 ```
 
-WHO LTBI (household contacts) estimates:
+**WHO LTBI (household contacts) estimates:**
 
 ```{r}
 #Loading LTBI estimates (Household contacts) data:
@@ -77,22 +84,24 @@ data_file   <- "LTBI_estimates.tsv"
 ltbi_data   <- load_data(data_file)
 
 #Display the data: 
-ltbi_data
+slice_sample(ltbi_data, n=5)
 ```
 
 ------------------------------------------------------------------------
+
+### \*Data of 2024 - Joining and augmenting: 
 
 **Joining the data of 2024:**
 
 We wanna merge some of the data from the other datasets onto this dataset.
 
-Specifically, we would like to obtain the information regarding the total population of each country, and merge it into our tibble.
+Specifically, we would like to obtain the information regarding the total population of each country, and merge it into our tibble containing the TB age, sex and risk factor data (only has data from 2024).
 
-We can use the '***WHO TB burden estimates \[\>1Mb\]***' dataset to obtain the information about the population.
+We can use the '***WHO TB burden estimates \[\>1Mb\]***' dataset to obtain the information about the population size for each country.
 
-Note: This dataset contains data from years other than 2024, so we can either filter those years away, or we can count for this in the way we merge.
+Note: This dataset contains data from years other than 2024, so we filter those years away.
 
-**Filtering the additional data of 2024 in order to merge:**
+**Getting population size data from 2024:**
 
 ```{r}
 #Making dataset containing all population data (2024) for every country. 
@@ -101,43 +110,73 @@ population_data_2024 <- TB_burden |>
   filter(year == 2024) |>
   rename(population_size = e_pop_num)
 
-population_data_2024
+slice_sample(population_data_2024, n=5)
 ```
 
-**Joining population data to main data:**
+**Joining population data to main data (TB_age_sex):**
 
 ```{r}
 TB_age_sex <- left_join(TB_age_sex, population_data_2024, by = c("country", "year"))
-TB_age_sex
+
+TB_age_sex #Note that the population_size column is now appended. 
 ```
 
 Note: The population size is kept constant in all rows, but e.g., Afghanistan has several rows for e.g. different age groups, where the TB cases varies - so TB varies, but population size is constant for each row (country specific).
 
 **Data augmentation:**
 
-Lastly, we can make a column which shows the amount of TB cases pr. 100k citizens in the country. This normalization will help make the TB cases more comparable for all countries, and makes the comparison more indepedent on the population size.
+Lastly, we can make a column which shows the amount of TB cases pr. 100k citizens in the country. I.e. a per capita normalization of the data.
+
+This normalization will help make the TB cases more comparable for all countries, and makes the comparison more indepedent on the population size.
+
+Because a large country is naturally going to have more TB cases than a small country.
+
+But by using this normalization, we get a better metric for comparing the actual TB infection intensity of that country.
 
 ```{r}
 #Data augmentation - TB cases pr. 100k citizens. 
 
 TB_age_sex <- TB_age_sex |>
   group_by(country) |>
-  mutate(total_TB_cases_best = sum(TB_cases_best), total_TB_cases_min = sum(TB_cases_min), total_TB_cases_max = sum(TB_cases_max)) |> #Getting the total sum of TB cases for every country
-  ungroup() |>
-  mutate(TB_cases_pr_100k_best = total_TB_cases_best/10^5, TB_cases_pr_100k_min = total_TB_cases_min/10^5, TB_cases_pr_100k_max = total_TB_cases_max/10^5)
   
+  #Getting the total sum of TB cases for every country
+  mutate( 
+    total_TB_cases_best = sum(TB_cases_best), 
+    total_TB_cases_min = sum(TB_cases_min), 
+    total_TB_cases_max = sum(TB_cases_max)
+    ) |> 
+      #Note: These total values will be constant and will span multiple rows for each country. 
+  
+  
+      #For each row (specific age, sex and risk-factor group), 
+      #calculate the pr. 100k amount of cases
+  mutate( 
+        TB_cases_pr_100k_best = TB_cases_best/population_size*10^5,
+        TB_cases_pr_100k_min = TB_cases_min/population_size*10^5,
+        TB_cases_pr_100k_max = TB_cases_max/population_size*10^5,
+        
+        #For each each country, calculate the summed pr. 100k amount of cases
+        total_TB_cases_pr_100k_best = total_TB_cases_best/population_size*10^5,
+        total_TB_cases_pr_100k_min = total_TB_cases_min/population_size*10^5, 
+        total_TB_cases_pr_100k_max = total_TB_cases_max/population_size*10^5
+        )
 ```
 
-Final (sanity) check if we have any NA values:
+We normalize by:
+
+(\<people with TB\> / \<people in entire country\>) \* 10\^5
+
+And thereby get that there are X amount of people who have TB pr. 100k citizens in the given country.
+
+**Check for NA values:**
 
 ```{r}
-TB_age_sex |>
-  summarise(across(everything(), ~ any(is.na(.))))
+any(is.na(TB_age_sex))
 ```
 
-OK, we are all clear B)))
+No NA values - that is great.
 
-Save joined data:
+**Save joined and augmented data:**
 
 ```{r}
 save_data(TB_age_sex, "TB_age_sex_joined.tsv")
@@ -145,11 +184,9 @@ save_data(TB_age_sex, "TB_age_sex_joined.tsv")
 
 ------------------------------------------------------------------------
 
-**Joining the data of 2015 to 2024:**
+### **\*Data of 2015 to 2024 - Joining:**
 
-We wanna merge the data from WHO TB burden estimates [>1Mb], WHO MDR/RR-TB burden estimates and WHO TB infection estimates in household contacts onto this dataset.
-
-Specifically, we would like to obtain the information ####
+We wanna merge the data from WHO TB burden estimates \[\>1Mb\], WHO MDR/RR-TB burden estimates and WHO TB infection estimates in household contacts onto this dataset.
 
 **Joining the three tables:**
 
@@ -159,15 +196,17 @@ TB_10_years <- inner_join(TB_10_years, ltbi_data, by = c("country", "year"))
 TB_10_years
 ```
 
-Final (sanity) check to inspect where there are any NA values:
+Dimensions: This spans **75 columns** and **1900 rows**.
+
+**Counting NA values for each column:**
 
 ```{r}
 enframe(colSums(is.na(TB_10_years)), name = "Column", value = "NA_Count")
 ```
 
-As we can see there are many NA values, which is expected because not all countries can provide all the information to fill these tables.
+As we can see, there are many NA values, which is expected because not all countries can provide all the information to fill these tables.
 
-Save joined data:
+**Save the joined data for 2015-2024:**
 
 ```{r}
 save_data(TB_10_years, "TB_10_years_joined.tsv")

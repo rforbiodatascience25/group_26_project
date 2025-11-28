@@ -434,7 +434,8 @@ TB_age_sex <- TB_age_sex |>
         #For each each country, calculate the summed pr. 100k amount of cases
         total_TB_cases_pr_100k_best = total_TB_cases_best/population_size*10^5,
         total_TB_cases_pr_100k_min = total_TB_cases_min/population_size*10^5, 
-        total_TB_cases_pr_100k_max = total_TB_cases_max/population_size*10^5)
+        total_TB_cases_pr_100k_max = total_TB_cases_max/population_size*10^5
+        )
   
 ```
 
@@ -1150,9 +1151,9 @@ TB_age_sex |>
   theme(axis.text.x = element_text(angle = 55, hjust = 1))
 ```
 
-----------------------------------------------
+------------------------------------------------------------------------
 
-### **Experimental:** 
+### **Experimental:**
 
 ```{r}
 #Arbitary baseline group: 
@@ -1351,7 +1352,7 @@ fviz_pca_biplot(
 )
 ```
 
----------------------------------------------
+------------------------------------------------------------------------
 
 **TB cases relative to risk factors AND sex:**
 
