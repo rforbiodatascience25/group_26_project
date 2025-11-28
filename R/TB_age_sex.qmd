@@ -1150,6 +1150,209 @@ TB_age_sex |>
   theme(axis.text.x = element_text(angle = 55, hjust = 1))
 ```
 
+----------------------------------------------
+
+### **Experimental:** 
+
+```{r}
+#Arbitary baseline group: 
+TB_age_sex |>
+  filter(
+    sex == "Both",
+    age_group == "25-34",
+    risk_factor == "no risk factor",
+  )
+```
+
+**Multiple regression:**
+
+```{r}
+model <- TB_age_sex |>
+  mutate(risk_factor = factor(risk_factor),
+         sex = factor(sex),
+         age_group = factor(age_group)) |>
+  lm(TB_cases_best ~ risk_factor + age_group + sex, data = _)
+
+summary(model)
+```
+
+**Heat map:**
+
+```{r}
+TB_age_sex |>
+  ggplot(aes(x = age_group, y = risk_factor, fill = TB_cases_pr_100k_best)) +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  labs(
+    title = "TB cases pr. 100k by age group and risk factor",
+    x = "Age group",
+    y = "Risk factor",
+    fill = "TB per 100k"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 55, hjust = 1)
+  )
+
+```
+
+Transparent = NA value.
+
+```{r}
+TB_age_sex |>
+  ggplot(aes(x = age_group, y = sex, fill = TB_cases_pr_100k_best)) +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  labs(
+    title = "TB cases pr. 100k by age group and risk factor",
+    x = "Age group",
+    y = "Sex",
+    fill = "TB per 100k"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 55, hjust = 1)
+  )
+
+```
+
+```{r}
+TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  ggplot(aes(x = age_group, y = country, fill = TB_cases_pr_100k_best)) +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  labs(
+    title = "TB cases pr. 100k by age group and country",
+    x = "Age group",
+    y = "Country",
+    fill = "TB per 100k"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 55, hjust = 1)
+  )
+
+```
+
+```{r}
+unique(TB_age_sex$age_group)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(forcats)
+library(factoextra)
+
+# 1. Filter to the relevant countries & clean
+pca_data <- TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  mutate(
+    risk_factor = factor(risk_factor),
+    age_group   = factor(age_group)
+  ) |>
+  
+  
+  # 2. Compute TB per 100k for PCA
+  mutate(TB_100k = TB_cases_best / population_size * 1e5) |>
+  
+  # 3. Aggregate: country × age_group × risk_factor
+  group_by(country, age_group, risk_factor) |>
+  summarise(TB_100k = sum(TB_100k), .groups = "drop") |>
+  
+  # 4. Wide format: rows = country, columns = age:risk combinations
+  unite(feature, age_group, risk_factor, sep = "_") |>
+  pivot_wider(
+    names_from = feature,
+    values_from = TB_100k,
+    values_fill = 0   # missing combinations = 0
+  )
+
+# 5. Prepare matrix for PCA
+pca_matrix <- pca_data |> 
+  select(-country) |> 
+  as.matrix()
+
+rownames(pca_matrix) <- pca_data$country
+
+# 6. Run PCA
+pca_res <- prcomp(pca_matrix, scale. = TRUE)
+
+# 7. PCA biplot using factoextra
+fviz_pca_biplot(
+  pca_res,
+  repel = TRUE,
+  col.var = "red",      # variable arrows
+  col.ind = "black",    # country labels
+  title = "PCA biplot of TB profiles (risk factor × age group)"
+)
+```
+
+```{r}
+pca_data
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(forcats)
+library(factoextra)
+
+# 1. Filter to the relevant countries & clean
+pca_data <- TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  mutate(
+    risk_factor = factor(risk_factor),
+    age_group   = factor(age_group)
+  ) |>
+  mutate(
+    age_group_collapsed = case_when(
+      age_group %in% c("0-14", "0-4", "5-9", "5-14", "10-14") ~ "child",
+      age_group %in% c("15+", "18+", "all") ~ "*mixed_age*",
+      TRUE ~ "adult"
+    )
+  ) |>
+
+  
+  
+  # 2. Compute TB per 100k for PCA
+  mutate(TB_100k = TB_cases_best / population_size * 1e5) |>
+  
+  # 3. Aggregate: country × age_group_collapsed × risk_factor
+  group_by(country, age_group_collapsed, risk_factor) |>
+  summarise(TB_100k = sum(TB_100k), .groups = "drop") |>
+  
+  # 4. Wide format: rows = country, columns = age:risk combinations
+  unite(feature, age_group_collapsed, risk_factor, sep = "_") |>
+  pivot_wider(
+    names_from = feature,
+    values_from = TB_100k,
+    values_fill = 0   # missing combinations = 0
+  )
+
+# 5. Prepare matrix for PCA
+pca_matrix <- pca_data |> 
+  select(-country) |> 
+  as.matrix()
+
+rownames(pca_matrix) <- pca_data$country
+
+# 6. Run PCA
+pca_res <- prcomp(pca_matrix, scale. = TRUE)
+
+# 7. PCA biplot using factoextra
+fviz_pca_biplot(
+  pca_res,
+  repel = TRUE,
+  col.var = "red",      # variable arrows
+  col.ind = "black",    # country labels
+  title = "PCA biplot of TB profiles (risk factor × age group)"
+)
+```
+
+---------------------------------------------
+
 **TB cases relative to risk factors AND sex:**
 
 ```{r}
