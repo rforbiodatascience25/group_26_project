@@ -17,20 +17,68 @@ how has household infection changed over time?
 
 which countries have the highest TB data gaps?
 
+------------------------------------------------------------------------
+
+**Note to self - add this in all code chunks when wrapping up:**
+
 ```{r}
-library(tidyverse)
+#| echo: true
+#| eval: true
+```
+
+**Loading relevant libraries:**
+
+```{r}
+library(tidyverse) 
+library(dplyr)
+library(ggplot2)
 ```
 
 ```{r}
-library(tidyverse)
-library(maps)
+#Access to the function for loading the datasets and to save them
+source("99_proj_func.R")
+```
+
+------------------------------------------------------------------------
+
+**Loading data:**
+
+Joined dataset, year 2015 to 2024:
+
+```{r}
+#Loading age and sex and risk group data (2024 only): 
+
+data_file           <- "TB_10_years_joined.tsv"
+TB_10_years_joined  <- load_data(data_file)
+
+#Display the data: 
+TB_10_years_joined
+```
+
+
+Dictionary:
+
+```{r}
+#Loading the data dictionary: 
+
+data_file   <- "TB_dictionary.csv"
+data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=dictionary"
+TB_dictionary <- raw_load_or_download(data_file, data_url)
+
+TB_dictionary
+
+```
+
+------------------------------------------------------------------------
+
+```{r}
 
 # 1. Get the world map data
 world_map <- map_data("world")
 
 # 2. Prepare your data (Latest year: 2024)
-ltbi_map_data <- ltbi_data %>%
-  filter(year == 2024) %>%
+ltbi_map_data <- ltbi_data |>
+  filter(year == 2024) |>
   # Fix country names to match library(maps)
   mutate(country = case_when(
     country == "United States" ~ "USA",
@@ -78,12 +126,12 @@ library(scales)
 df <- TB_10_years
 
 # 2. Filter for 2024 Data
-df_2024 <- df %>%
+df_2024 <- df |>
   filter(year == 2024)
 
 # GLOBAL ANALYSIS (Matching the Text)
 
-analysis_2024 <- df_2024 %>%
+analysis_2024 <- df_2024 |>
   summarise(
     # 1. Estimated Household Contacts (Matches "14 million")
     Global_Estimated_Contacts = sum(Contacts_best, na.rm = TRUE),
@@ -95,7 +143,7 @@ analysis_2024 <- df_2024 %>%
     # 3. Children <5 Eligible & on TPT
     Global_Kids_Eligible = sum(Preventive_Tx_Eligible, na.rm = TRUE),
     Global_Kids_TPT = sum(Preventive_Tx_Eligible * (Preventive_Tx_Kids_Pct / 100), na.rm = TRUE)
-  ) %>%
+  ) |>
   mutate(
     Global_Coverage_Pct = (Global_TPT_Total / Global_Estimated_Contacts) * 100
   )
@@ -104,8 +152,8 @@ print(" GLOBAL TB PREVENTIVE TREATMENT HIGHLIGHTS (2024)")
 print(analysis_2024)
 
 # Prepare Map Data
-world_map <- map_data("world") %>%
-  rename(country = region) %>%
+world_map <- map_data("world") |>
+  rename(country = region) |>
   # Fix common country name mismatches to improve data joining
   mutate(country = case_when(
     country == "USA" ~ "United States of America",
@@ -149,20 +197,16 @@ print(p_map)
 ```
 
 ```{r}
-library(tidyverse)
-library(maps)
-library(scales)
-
 # 1. Load Data
 df <- TB_10_years
 
 # Map of TB Incidence Rates (2024)
 # "Estimated new cases per 100,000 population"
 
-df_2024 <- df %>% filter(year == 2024)
+df_2024 <- df |> filter(year == 2024)
 
-world_map <- map_data("world") %>%
-  rename(country = region) %>%
+world_map <- map_data("world") |>
+  rename(country = region) |>
   mutate(country = case_when(
     country == "USA" ~ "United States of America",
     country == "UK" ~ "United Kingdom",
@@ -195,15 +239,12 @@ print(p_map_inc)
 ```
 
 ```{r}
-library(tidyverse)
-library(scales)
-
 # 1. Load Data
 df <- TB_10_years
 
 # 2. Data Processing
 # We need to calculate the absolute numbers from the percentages and denominators.
-plot_data <- df %>%
+plot_data <- df |>
   mutate(
     # A. Calculate Number of Children (<5) on TPT
     # 'Preventive_Tx_Eligible' is typically the number of eligible children <5
@@ -214,25 +255,25 @@ plot_data <- df %>%
     # 'Contacts_best' is the number of contacts evaluated (denominator)
     # 'Preventive_Tx_Pct' is the overall contact coverage %
     TPT_Total_Contacts = Contacts_best * (Preventive_Tx_Pct / 100)
-  ) %>%
+  ) |>
   # Aggregate global totals by year
-  group_by(year) %>%
+  group_by(year) |>
   summarise(
     TPT_Kids_Global = sum(TPT_Kids, na.rm = TRUE),
     TPT_Total_Global = sum(TPT_Total_Contacts, na.rm = TRUE)
-  ) %>%
+  ) |>
   mutate(
     # C. Derive Adults/Older Contacts (>=5) on TPT
     # Subtract Kids from the Total. Ensure no negative values.
     TPT_Adults_Global = pmax(0, TPT_Total_Global - TPT_Kids_Global)
-  ) %>%
+  ) |>
   # Reshape data for plotting (Long format)
-  select(year, TPT_Kids_Global, TPT_Adults_Global) %>%
+  select(year, TPT_Kids_Global, TPT_Adults_Global) |>
   pivot_longer(
     cols = c("TPT_Kids_Global", "TPT_Adults_Global"),
     names_to = "Category",
     values_to = "Number_on_TPT"
-  ) %>%
+  ) |>
   # Rename categories for the legend
   mutate(
     Category = case_when(
@@ -274,22 +315,20 @@ ggplot(plot_data, aes(x = year, y = Number_on_TPT, fill = Category)) +
 ```
 
 ```{r}
-library(tidyverse)
-library(scales)
 
 # Load and Prep Data
 df <- TB_10_years 
-df_clean <- df %>%
+df_clean <- df |>
   mutate(TPT_Contacts_Num = Contacts_best * Preventive_Tx_Pct / 100)
 
-global_trends <- df_clean %>%
-  filter(year >= 2015) %>%
-  group_by(year) %>%
+global_trends <- df_clean |>
+  filter(year >= 2015) |>
+  group_by(year) |>
   summarise(
     Total_TPT_Contacts = sum(TPT_Contacts_Num, na.rm = TRUE),
     Total_Contacts_Eligible = sum(Contacts_best, na.rm = TRUE),
     Avg_Child_Coverage = mean(Preventive_Tx_Kids_Pct, na.rm = TRUE)
-  ) %>%
+  ) |>
   mutate(Contact_Coverage = (Total_TPT_Contacts / Total_Contacts_Eligible) * 100)
 
 # Generate Plot
@@ -314,12 +353,11 @@ print(p)
 ```
 
 ```{r}
-library(tidyverse)
-library(scales)
+latest_year = 2024
 
 # 1. Prepare the Data
-gap_analysis <- TB_10_years %>%
-  filter(year == latest_year) %>%
+gap_analysis <- TB_10_years |>
+  filter(year == latest_year) |>
   filter(!is.na(Preventive_Tx_Pct) & !is.na(Contacts_best))
 
 # 2. Define Dynamic Thresholds
@@ -330,7 +368,7 @@ burden_threshold <- quantile(gap_analysis$Contacts_best, 0.90)
 coverage_threshold <- 50
 
 # 3. Create a Flag for High Risk Countries
-gap_analysis <- gap_analysis %>%
+gap_analysis <- gap_analysis |>
   mutate(
     Is_High_Risk = if_else(Contacts_best >= burden_threshold & Preventive_Tx_Pct < coverage_threshold, 
                            "High Risk (High Burden, Low Coverage)", 
@@ -366,3 +404,160 @@ ggplot(gap_analysis, aes(x = Contacts_best, y = Preventive_Tx_Pct)) +
   theme_bw() +
   theme(legend.position = "bottom")
 ```
+ 
+**AMR resistance insights:**
+
+One of the first interesting questions that arise is how is the trending of AMR in TB.
+
+```{r}
+TB_10_years_joined |>
+  group_by(year) |>
+  summarise(
+    New = mean(rr_new, na.rm = TRUE),
+    Treated = mean(rr_treated, na.rm = TRUE),
+    Incidence = mean(rr_incidence, na.rm = TRUE)) |>
+  pivot_longer(cols = c(New, Treated, Incidence), names_to = 'type', values_to = 'value') |>
+  ggplot(aes(x = year, y = value)) +
+  geom_point(alpha=0.45) +
+  geom_smooth(aes(color = type)) +
+  scale_color_brewer(palette = "Set2") +
+  facet_wrap(~type, ncol = 1, scales = 'free_y', 
+           strip.position = "left", #Change to Y axis to rename each subplot
+           labeller = labeller(type = c(  #Give specific names to each subplot
+             "New" = "Percentage (%)",
+             "Treated" = "Percentage (%)", 
+             "Incidence" = "Amount of Cases"))) +
+  labs(
+        x = "Year", 
+        y = "", 
+        title = "New, Treated and incident cases globaly per year", 
+        color = "Type") +
+  theme_minimal()
+```
+
+With this previous plot the results are expected and promising, even though the amount is minimal there's a disminution of cases each year. It could look like the "New" incidents its starting to go up again but more information would be needed for that, as its only year 2024 that had an increase.
+ 
+Another question of interest its if there's any relationship between the drug resistancy and the mortality, and furthermore, if its something global or its per region.
+
+```{r}
+TB_10_years_joined |>
+  ggplot(aes(x=(rr_incidence/e_pop_num*100000),y=e_mort_100k, color=g_whoregion.x)) +
+  geom_point(alpha = 0.45)+
+  geom_smooth(method='lm', se = FALSE)+
+  coord_cartesian(xlim=c(0,45), ylim=c(0,150)) +  #Eye calculated good limit for the plot
+  scale_color_brewer(palette = "Set2") +
+  labs(
+        x = "RR - TB", 
+        y = "Mortality", 
+        title = "Relation between RR - TB and Mortality per region", 
+        color = "WHO Region") +
+  theme_minimal()
+```
+
+This graph shows a clear tendency of mortality to increase the same way as drug resistance increases. It's also  interesting how the regions that control better drug resistance as Europe have less mortality, whic of course is an expected outcome.
+
+**Household insights:**
+
+```{r}
+contacts_best <- TB_10_years_joined |>
+  filter(year == 2024) |>  # Keep data for 2015 and for both sex
+  select(country, Contacts_best) |>                      # Select the two columns of interest
+  rename(region = country, contacts = Contacts_best) |>  # Rename columns
+  # Replace "United States of America" by USA in the region column
+  mutate(region = case_when(
+                            region == "United States of America"   ~ "USA",
+                            region == "Bolivia (Plurinational State of)" ~ "Bolivia",
+                            region == "Brunei Darussalam" ~ "Brunei",
+                            region == "Cabo Verde" ~ "Cape Verde",
+                            region == "China, Hong Kong SAR" ~ "Hong Kong",
+                            region == "China, Macao SAR" ~ "Macao", 
+                            region == "Congo" ~ "Republic of Congo",
+                            region == "Côte d'Ivoire" ~ "Ivory Coast",
+                            region == "Czechia" ~ "Czech Republic",
+                            region == "Democratic People's Republic of Korea" ~ "North Korea",
+                            region == "Eswatini" ~ "Swaziland",
+                            region == "Iran (Islamic Republic of)" ~ "Iran",
+                            region == "Lao People's Democratic Republic" ~ "Laos",
+                            region == "Netherlands (Kingdom of the)" ~ "Netherlands",
+                            region == "occupied Palestinian territory, including east Jerusalem" ~ "Palestine",
+                            region == "Republic of Korea" ~ "South Korea",
+                            region == "Republic of Moldova" ~ "Moldova", 
+                            region == "Russian Federation" ~ "Russia",
+                            region == "Sint Maarten (Dutch part)" ~ "Sint Maarten",
+                            region == "Syrian Arab Republic" ~ "Syria",
+                            region == "Tokelau" ~ "Tokelau",
+                            region == "Trinidad and Tobago" ~ "Trinidad",
+                            region == "Türkiye" ~ "Turkey",
+                            region == "Tuvalu" ~ "Tuvalu",
+                            region == "United Kingdom of Great Britain and Northern Ireland" ~ "UK",
+                            region == "United Republic of Tanzania" ~ "Tanzania",
+                            region == "Venezuela (Bolivarian Republic of)" ~ "Venezuela",
+                            region == "Viet Nam" ~ "Vietnam",
+                            TRUE   ~ region
+))
+world_map <- map_data("world")
+contacts_best_map <- left_join(contacts_best, world_map, by = "region")
+
+ggplot(contacts_best_map, aes(long, lat, group = group))+
+  geom_polygon(aes(fill = contacts ), color = "white", size = 0.1) +
+  coord_quickmap() + 
+  scale_fill_viridis_c(option = "C") +
+  labs(
+        x = "", 
+        y = "", 
+        title = "Household TB contacts by country (2024)", 
+        fill = "Contacts") +
+  theme_void() +
+  theme(
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5),
+      legend.position = "bottom",
+  legend.key.width = unit(2, "cm"))
+```
+
+The map shows how India is the country with most TB contacts during 2024, which is not a huge surprise as its an overcrowded country.
+
+Another hypothesis to prove was that if the amount of detection cound contribute to lower the amount of household contacts:
+
+```{r}
+TB_10_years_joined |>
+  ggplot(aes(x = (Contacts_best / e_pop_num) * 100000, y = c_cdr_pct)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(
+    x = "Household contacts per 100k",
+    y = "Case detection rate (%)",
+    subtitle = "Relationship between household contacts and CDR"
+  ) +
+  theme_minimal()
+```
+
+The plot shows that the hypothesis was correct, and also its interesting to find that there are some outlayers in the scatter, the maximum should be 100% but for some reason there are values as high as ~140%.
+
+**HIV insights:**
+
+It's easy to conclude that having TB, HIV and RR cause more fatalities than having only TB. But comparing those who have TB and HIV from those who have RR - TB is an interesting topic:
+
+```{r}
+TB_10_years_joined |>
+mutate(
+disease = case_when(
+  e_tbhiv_prct > mean(e_tbhiv_prct, na.rm = TRUE) & rr_new > mean(rr_new, na.rm = TRUE) ~ "HIV & RR-TB",
+  e_tbhiv_prct > mean(e_tbhiv_prct, na.rm = TRUE) ~ "HIV & TB",
+  rr_new > mean(rr_new, na.rm = TRUE) ~ "Only RR-TB",
+  TRUE ~ "Only TB"
+)) |>
+ggplot(aes(x=disease, y =e_mort_100k, fill = disease))+
+geom_boxplot() +
+scale_fill_brewer(palette = "Set2") + 
+labs(
+    x = "",
+    y = "Mortality cases per 100k",
+    subtitle = "Mortality according to combinations of HIV and RR-TB",
+    fill = "Disease"
+  ) +
+  theme_minimal()
+```
+
+From this boxplot it can be concluded that the hypothesis that having HIV and RR-TB cause more fatalities than having only TB. Nevertheless is interesting to find that there's more mortality in cases of HIV and TB than in cases of RR-TB. More data is needed to conclude the exact reason, but the most probable reason is the synergy between TB and HIV. Having HIV makes the immune system struggle to fight TB, and then TB can cause more inflamation which at the same time makes easier for HIV to replicate creating a chain reaction of problems.
+
