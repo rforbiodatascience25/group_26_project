@@ -68,7 +68,7 @@ mdr_rr_data   <- load_data(data_file)
 mdr_rr_data
 ```
 
-WHO MDR/RR-TB burden estimates:
+WHO LTBI (household contacts) estimates:
 
 ```{r}
 #Loading LTBI estimates (Household contacts) data:
@@ -120,7 +120,7 @@ Lastly, we can make a column which shows the amount of TB cases pr. 100k citizen
 ```{r}
 #Data augmentation - TB cases pr. 100k citizens. 
 
-TB_age_sex |>
+TB_age_sex <- TB_age_sex |>
   group_by(country) |>
   mutate(total_TB_cases_best = sum(TB_cases_best), total_TB_cases_min = sum(TB_cases_min), total_TB_cases_max = sum(TB_cases_max)) |> #Getting the total sum of TB cases for every country
   ungroup() |>
@@ -155,6 +155,7 @@ Specifically, we would like to obtain the information ####
 
 ```{r}
 TB_10_years <- inner_join(TB_burden, mdr_rr_data, by = c("country", "year"))
+TB_10_years <- inner_join(TB_10_years, ltbi_data)
 TB_10_years
 ```
 

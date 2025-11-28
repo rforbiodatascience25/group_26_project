@@ -419,6 +419,10 @@ save_data(TB_age_sex, "TB_age_sex.tsv")
 **Cleaning of TB_household_estimates:**
 
 ```{r}
+ltbi_data |> glimpse()
+```
+
+```{r}
 
 #| echo: true
 #| eval: true
@@ -450,7 +454,10 @@ ltbi_data <- ltbi_data |>
     WHO_region            = g_whoregion
   ) |>
   # 2. Remove irrelevant columns
-  select(-iso2, -iso3, -iso_numeric) |>
+  select(-iso2, -iso3, -iso_numeric,
+          -newinc_con_prevtx, -newinc_con04_prevtx,
+          -ptsurvey_newinc, -ptsurvey_newinc_con04_prevtx,
+          -prevtx_data_available, -WHO_region) |>
   # 3. Clean survey source
   mutate(
     survey_source = str_extract(source_hh, "^[^;]+")
@@ -462,6 +469,11 @@ summary(ltbi_data$Preventive_Tx_Kids_Pct)
 # Sanity check: View the updated column names
 colnames(ltbi_data)
 ```
+
+
+
+
+
 
 ```{r}
 #Save data
