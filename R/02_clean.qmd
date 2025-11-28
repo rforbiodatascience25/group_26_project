@@ -3,35 +3,28 @@ title: "02_clean"
 format: html
 ---
 
-WHO 2025 data on Tuberculosis.
+WHO 2025 data on Tuberculosis (TB).
 
-In this script, we will be working with the data cleaning, for that purpose we need to understand first our data so we can continue with the rest.
+In this script, we will be working with the data cleaning.
+
+For that purpose, it can be a great advantage to first understand our data. So this script will also contain a bit about data exploration.
 
 ------------------------------------------------------------------------
 
-**Note to self - add this in all code chunks when wrapping up:**
+# **Loading relevant libraries:**
 
 ```{r}
-#| echo: true
-#| eval: true
-```
+library("tidyverse") #No tidyverse, no R course~
 
-**Loading relevant libraries:**
-
-```{r}
-library("tidyverse") 
-```
-
-```{r}
 #Access to the function for loading the datasets and to save them
 source("99_proj_func.R")
 ```
 
 ------------------------------------------------------------------------
 
-**Loading data:**
+# **Loading data:**
 
-WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]
+**WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]:**
 
 ```{r}
 #Loading age and sex and risk group data (2024 only): 
@@ -45,7 +38,7 @@ TB_age_sex
 
 ```
 
-WHO TB burden estimates \[\>1Mb\]:
+**WHO TB burden estimates \[\>1Mb\]:**
 
 ```{r}
 #Loading TB burden estimates: 
@@ -58,7 +51,7 @@ TB_burden <- raw_load_or_download(data_file, data_url)
 TB_burden
 ```
 
-WHO TB data dictionary:
+**WHO TB data dictionary:**
 
 ```{r}
 #Loading the data dictionary: 
@@ -71,7 +64,7 @@ TB_dictionary <- raw_load_or_download(data_file, data_url)
 TB_dictionary
 ```
 
-WHO MDR/RR-TB burden estimates:
+**WHO MDR/RR-TB burden estimates:**
 
 ```{r}
 #Loading MDR/RR-TB burden estimates
@@ -85,7 +78,7 @@ mdr_rr_data
 
 ```
 
-WHO Household contacts estimates:
+**WHO Household contacts estimates:**
 
 ```{r}
 #Loading LTBI estimates (Household contacts) data:
@@ -100,7 +93,9 @@ ltbi_data
 
 ------------------------------------------------------------------------
 
-**Cleaning of TB_burden:**
+# Cleaning the 4 datasets
+
+## **\*TB_burden data cleaning:**
 
 Get only the data dictionary based on burden countries (and some extra) to understand the data on TB_burden and be able to properly clean it:
 
@@ -111,9 +106,13 @@ variables <- c('iso3','iso2','iso_numeric','g_whoregion','year')
 TB_dictionary |> filter(
   variable_name %in% variables | str_starts(variable_name, 'e_') | str_starts(variable_name, 'cfr') | str_starts(variable_name, 'c_')
 )
+
+#The filter gets entries in the data dictonary where it either matches with 
+#the 'variables' vector, or where they start with 'e_', 'cfr' or 'c_'. 
+
 ```
 
-Count nulls per column in TB_burden, and total amount of rows to compare them:
+Count nulls (NA) per column in TB_burden, and total amount of rows to compare them:
 
 ```{r}
 na_counts <- enframe(colSums(is.na(TB_burden)), name = "Column", value = "NA_Count")
@@ -121,7 +120,9 @@ TB_burden |> count()
 na_counts
 ```
 
-Check the reason for missing values. For the cases with only 25 cases we can see it's because of Namibia not having an iso2 country code, and also for North Korea not providing enough information. For cases like e_tbhiv_prct_lo and e_tbhiv_prct_hi we see that the whole column is filled with NA's. And finally there are some other columns with NA's on some specific countries.
+Check the reason for missing values. For the cases with only 25 cases we can see it's because of Namibia not having an iso2 country code, and also for North Korea not providing enough information.
+
+For cases like e_tbhiv_prct_lo and e_tbhiv_prct_hi we see that the whole column is filled with NA's. And finally there are some other columns with NA's on some specific countries.
 
 ```{r}
 TB_burden[is.na(TB_burden$iso2),]#Data from Namibia
@@ -129,14 +130,18 @@ TB_burden[is.na(TB_burden$e_inc_100k),]#Data from Korea
 TB_burden[is.na(TB_burden$e_tbhiv_prct),]#Data for random columns
 ```
 
-As we have the iso3 country code, we don't actually need an iso2, so we remove this column. Furthermore, we also remove iso3 and iso_numeric as they don't provide any valuable information, Also, as there are two columns that are full of missing values, so in order to avoid using memory and since they don't give any information we decided to remove them:
+As we have the iso3 country code, we don't actually need an iso2, so we remove this column. Furthermore, we also remove iso3 and iso_numeric as they don't provide any valuable information.
+
+Also, as there are two columns that are full of missing values, in order to avoid using memory, and since they don't give any information, we decided to remove them:
 
 ```{r}
 TB_burden <- TB_burden |>
   select(-iso2, -iso3, -iso_numeric, -e_tbhiv_prct_lo, -e_tbhiv_prct_hi)
 ```
 
-The "e" at the begining of the columns means "estimated" which is easy to understand. But there are some problems as for example column "cfr_pct" refers to case fatality ratio percentage, though there are some other columns like "c_cdr" which are also expressed in terms of percentage as we can see when looking at the data dictionary. Therefore, those columns will be renamed for better understandably:
+The "e" at the begining of the columns means "estimated" which is easy to understand.
+
+But there are some problems as for example column "cfr_pct" refers to case fatality ratio percentage, though there are some other columns like "c_cdr" which are also expressed in terms of percentage as we can see when looking at the data dictionary. Therefore, those columns will be renamed for better understandably:
 
 ```{r}
 TB_burden_clean <- TB_burden |> 
@@ -153,7 +158,7 @@ Show the first 50 rows of TB_burden_clean (sanity check):
 head(TB_burden_clean,50)
 ```
 
-Now we previously saw with a count() that there are 5347 rows, if we take in account that there are 25 years per country, then 5347/25 is not an integer. Therefore we need to check which country or countries provided information from less years.
+Now we previously saw with a count() that there are 5347 rows, if we take in account that there are 25 years per country, then 5347/25 is not an integer. Therefore, we need to check which country or countries provided information from less years.
 
 ```{r}
 TB_burden |> 
@@ -165,7 +170,7 @@ n = n()
 
 As it can be see on year 2001 and 2001 there's only have information from 211 countries, from 2002 to 2004 there are 212 countries, from 2005 to 2009 one more country, on 2010 a total of 214 countries and finally from 2011 a total of 215 countries.
 
-This information is important to notice that this table alone can be used for certain statistics and graphs, though if there's a need to join it with the other tables then probably it's better to focus from year 2011 onwards. Fortunately, the other two tables that can be used for a join have information only from 2015v onwards.
+This information is important to notice that this table alone can be used for certain statistics and graphs, though if there's a need to join it with the other tables then it's probably better to focus on year 2011 and onwards. Fortunately, the other two tables that can be used for a join have information only from 2015 and onwards.
 
 So now we can save this table into our data folder which is already cleaned:
 
@@ -176,7 +181,7 @@ save_data(TB_burden_clean, "TB_burden.tsv")
 
 ------------------------------------------------------------------------
 
-**Cleaning of TB_age_sex:**
+## **\*TB_age_sex data cleaning:**
 
 **Comments about the data:**
 
@@ -188,16 +193,7 @@ Shows metadata about **age** groups, **sex**, and **risk factors** (e.g., HIV).
 
 Furthermore, it shows the best estimate of TB cases ("**best**" column) a high bound of that estimate ("**hi**" column), and a lower bound of that estimate ("**lo**" column).
 
-### **Data exploration:**
-
-```{r}
-#Summary statistics
-
-#Note: The output is not very pretty. Use the code block below. 
-
-#summary(TB_age_sex)
-
-```
+**Data exploration:**
 
 ```{r}
 #Some summary statistics: 
@@ -246,7 +242,7 @@ TB_age_sex <- TB_age_sex |>
 ```
 
 ```{r}
-TB_age_sex
+slice_sample(TB_age_sex, n=5)
 ```
 
 Note: The age group sometimes contains info like "15plus" instead of e.g. "15-100" or "15+".
@@ -266,7 +262,7 @@ TB_age_sex <- TB_age_sex |>
     ) 
   ) 
 
-print(TB_age_sex)
+slice_sample(TB_age_sex, n=5)
 ```
 
 ```{r}
@@ -289,7 +285,7 @@ TB_age_sex <- TB_age_sex |>
 ```
 
 ```{r}
-print(TB_age_sex)
+slice_sample(TB_age_sex, n=5)
 ```
 
 **All of the risk factors in the data:**
@@ -298,7 +294,7 @@ print(TB_age_sex)
 unique(TB_age_sex$risk_factor)
 ```
 
-all = all risk factors combined.
+all = no risk factor ("*not disaggregated by specific risk factors*").
 
 alc = alcoholism
 
@@ -311,10 +307,17 @@ hiv = HIV infected
 und = undernourishment
 
 ```{r}
+#We can look up in the dictionary file to gain more insight: 
+TB_dictionary |>
+  filter(dataset == "Disaggregated estimates")
+```
+
+```{r}
+#Renaming the different risk factors: 
 TB_age_sex <- TB_age_sex |> 
   mutate( 
     risk_factor = case_when( 
-      risk_factor == "all" ~ "all", #stay the way it is. 
+      risk_factor == "all" ~ "no risk factor", 
       risk_factor == "alc" ~ "alcoholism", 
       risk_factor == "smk" ~ "smoking", 
       risk_factor == "dia" ~ "diabetes", 
@@ -330,7 +333,9 @@ Sanity check:
 unique(TB_age_sex$risk_factor)
 ```
 
-Last adjustments to the data would be correcting the "age_group" so e.g. "15plus" becomes "15+".
+**Adjustments to age_group data:**
+
+"15plus" should become "15+".
 
 ```{r}
 unique(TB_age_sex$age_group)
@@ -338,7 +343,7 @@ unique(TB_age_sex$age_group)
 
 ```{r}
 TB_age_sex <- TB_age_sex |>
-  mutate(age_group = str_replace(age_group, "plus", "+")) #str_replace is from 'stringr'
+  mutate(age_group = str_replace(age_group, "plus", "+")) #Replace 'plus' with the actual sign. 
 ```
 
 ```{r}
@@ -362,12 +367,14 @@ TB_age_sex |>
 
 As there are no further NA values, in the remaining, cleaned data, it seems fair to conclude the cleaning of the data here.
 
-Finally, let's sample only the data from Denmark, just to get some insights:
+**Sample only the data from Denmark - quality check:**
 
 ```{r}
 TB_age_sex |>
   filter(country == "Denmark", sex == "Both")
 ```
+
+(It is always nice to examine a subset where you have a realistic impression of the approximate number).
 
 It is worth noting that (at least for Denmark) the risk factors are only reported on the "sex = Both" grouped data.
 
@@ -386,28 +393,7 @@ TB_age_sex |>
   summarise(sum_TB = sum(TB_cases_best))
 ```
 
-'Risk factor = all' is not specified anywhere in the WHO report.
-
-Therefore, based on the analysis above, it seems safe to draw the conclusion that 'risk factor = all' actually means 'risk factor = no risk factor'.
-
-We will therefore rename the value accordingly:
-
-```{r}
-TB_age_sex <- TB_age_sex |>
-  mutate(
-    risk_factor = case_when(
-      risk_factor == "all" ~ "no risk factor",
-      TRUE ~ risk_factor        # keep all other values as they are
-    )
-  )
-
-```
-
-This was a nice case of how critical thinking can help out when official descriptions of the dataset fall short.
-
-```{r}
-TB_age_sex
-```
+**Save the cleaned data:**
 
 ```{r}
 #Save data
@@ -416,13 +402,15 @@ save_data(TB_age_sex, "TB_age_sex.tsv")
 
 ------------------------------------------------------------------------
 
-**Cleaning of TB_household_estimates:**
+## **\*TB_household_estimates data cleaning:**
 
 ```{r}
-ltbi_data |> glimpse()
+ltbi_data |> 
+  glimpse() #Gives a compact overview of the tibble. 
 ```
 
 ```{r}
+#Cleaning the data - all-in-one: 
 
 #| echo: true
 #| eval: true
@@ -470,19 +458,14 @@ summary(ltbi_data$Preventive_Tx_Kids_Pct)
 colnames(ltbi_data)
 ```
 
-
-
-
-
+**Save the cleaned data:**
 
 ```{r}
 #Save data
 save_data(ltbi_data, "LTBI_estimates.tsv")
 ```
 
-
-
-**Cleaning of MDR_RR_TB_burden:**
+## **\*MDR_RR_TB_burden data cleaning :**
 
 Get the descriptions of the variables from the dictionary to understand what we are looking at:
 
@@ -501,10 +484,10 @@ dict_missing
 
 ```
 
-The dictionary covers all variables except year (which should be obvious to me but was not).\
+The dictionary covers all variables except year.\
 \
 
-Renaming them to be more intuitive:\
+Renaming them to be more intuitive:
 
 ```{r}
 mdr_rr_data <- mdr_rr_data |> 
@@ -538,7 +521,6 @@ mdr_rr_data <- mdr_rr_data |>
   )
 ```
 
-
 What is the number of observations per year and per country?\
 
 ```{r}
@@ -546,19 +528,21 @@ mdr_rr_data |> count(country)
 mdr_rr_data |> count(year)
 ```
 
-So we have 215 countries ans 10 years, with 1 observation per year per country.\
+We have 215 countries and 10 years, with 1 observation per year per country.\
 \
 
-Are there missing values?\
+**Checking for missing values (NA):**
 
 ```{r}
-mdr_rr_data |> summarise(across(everything(), ~sum(is.na(.))))
+mdr_rr_data |> 
+  summarise(across(everything(), ~sum(is.na(.))))
 
 ```
 
 All estimated values have 330 or 345 missing values.\
 
 ```{r}
+#Inspecting the rows/ countries which are specifically missing values: 
 mdr_rr_data |> filter(!is.na(iso2)) |> 
                filter(if_any(everything(), is.na)) |> 
               slice_sample(n=20)
@@ -568,10 +552,12 @@ mdr_rr_data |> filter(is.na(iso2))
 Random observations are missing estimated values.\
 Namibia is missing 'iso2'.\
 
-Removing 'iso2' and other reduntant variables as with other datasets:
+Removing 'iso2' and other redundant variables as with other datasets:
 
 ```{r}
-mdr_rr_data <- mdr_rr_data |> select(-iso2, -iso3, -iso_numeric)
+#Removing redundant columns
+mdr_rr_data <- mdr_rr_data |> 
+  select(-iso2, -iso3, -iso_numeric)
 ```
 
 Are there countries that are entirely missing estimated values for all observations?\
@@ -582,13 +568,16 @@ mdr_rr_data|> group_by(country) |>
   filter(all_missing)
 ```
 
-33 out of 215 countries are missing all estimated variables. Not going to do anything about it for now, but worth noting.
+33 out of 215 countries are missing all estimated variables.
 
+This is worth noting for later.
 
-Save clean data:
+**Save cleaned data:**
 
 ```{r}
 save_data(mdr_rr_data, "MDR_RR_burden_estimates.tsv")
 ```
 
+-------------------------------------
 
+Next stop, data augmentation!
