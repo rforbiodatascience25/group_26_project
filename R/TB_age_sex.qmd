@@ -1057,7 +1057,7 @@ TB_age_sex |>
 
 ```
 
-**Bar plot - TB cases relative to risk factors:**
+**Bar chart - TB cases relative to risk factors:**
 
 We can now make a plot of the TB cases, and also plot the risk factors (HIV, etc.) next to each bar. We will make a bar for each of the top 10 countries.
 

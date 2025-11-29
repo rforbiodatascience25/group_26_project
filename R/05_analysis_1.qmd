@@ -19,13 +19,6 @@ which countries have the highest TB data gaps?
 
 ------------------------------------------------------------------------
 
-**Note to self - add this in all code chunks when wrapping up:**
-
-```{r}
-#| echo: true
-#| eval: true
-```
-
 **Loading relevant libraries:**
 
 ```{r}

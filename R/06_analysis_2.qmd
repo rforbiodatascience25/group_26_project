@@ -3,3 +3,839 @@ title: "06_analysis_2"
 format: html
 ---
 
+In this script we will explore only the 2024 datasets, i.e. the "*WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]*" which was joined with 2024 population data from the "*WHO TB burden estimates \[\>1Mb\]*" dataset.
+
+**Note**:
+
+This script is cleaned and slightly more refined version of the "**TB_age_sex.qmd**" script.
+
+If you want an even deeper insight into some of the more exploratory and experimental stuff (e.g. testing out a BUNCH of plots), we recommend checking out that script - even tho it is slightly outdated and a bit more messy.
+
+# **Loading libraries:** 
+
+```{r}
+library(tidyverse) #The main package of the course. Allows us to load nifty table-like structures. A bit similar to Pandas from Python.
+library(dplyr)     #Allows us to make the |> pipelines when manipulating data. 
+library(stringr)   #Allows for string manipulation. Can be good when you e.g. want to rename stuff.
+library(ggplot2)   #For making cool plots. 
+library(forcats)   #Used for PCA biplots. 
+library(factoextra) #Used for PCA biplots.
+
+#Access to the function for loading the datasets and to save them
+source("99_proj_func.R")
+```
+
+# **Loading the data:**
+
+```{r}
+#Loading age and sex and risk group data (2024 only) - Joined and augmented version of the data: 
+
+data_file <- "TB_age_sex_joined.tsv"
+TB_age_sex  <- load_data(data_file)
+
+#Display the data: 
+slice_sample(TB_age_sex, n=5)
+```
+
+# **Data visualization:**
+
+**Important values:**
+
+```{r}
+TB_age_sex |> 
+  group_by(country) |>
+  summarise(
+    country_population = first(population_size),
+    country_total_TB_cases_best_estimate = sum(TB_cases_best),
+  ) |>
+  ungroup() |>
+  summarise(
+    world_population = sum(country_population), 
+    total_TB_cases_best_estimate = sum(country_total_TB_cases_best_estimate),
+    global_TB_cases_pr_100k = total_TB_cases_best_estimate/world_population*10^5,
+    )
+  
+```
+
+**World population in 2024:**
+
+8,104,074,909 \| (8 billion)
+
+**Total amount of TB cases in 2024:**
+
+71,744,072 \| (72 million)
+
+**Amount of TB cases pr. 100k (per capita standardization):**
+
+885.2839 \| (885 out of every 100,000 person has TB)
+
+### **Initiating objects containing valuable information - top 10 countries:** 
+
+**The countries with the top 10 most *TB cases in total*:**
+
+```{r}
+#Getting the 10 countries with highest total amount of TB cases:  
+top_10_countries <- TB_age_sex |>
+  group_by(country) |>
+  summarise(total_TB = first(total_TB_cases_best)) |>
+  arrange(desc(total_TB)) |>
+  slice_head(n = 10) |> 
+  pull(country)
+```
+
+```{r}
+top_10_countries
+```
+
+**The countries with the top 10 most *TB cases pr. 100k citizens (standardized)*:**
+
+```{r}
+#Making an object for storing the top 10 countries with most TB cases: 
+top_10_countries_100k <- TB_age_sex |>
+  group_by(country) |>
+  summarise(
+    total_TB_cases_pr_100k_best = first(total_TB_cases_pr_100k_best),
+    #Note: The value is constant for each country, so we just use first()
+    #in order to pick the first value (we want to reduce several rows  
+    #to 1 row pr. country) 
+    ) |>
+  arrange(desc(total_TB_cases_pr_100k_best)) |>
+  slice_head(n = 10) |>
+  pull(country)
+```
+
+```{r}
+top_10_countries_100k
+```
+
+Be sure to check out the 2 scatter plots from 04_describe.qmd which highlights the vital difference between using these two different set of values.
+
+### **Scatter plot with error bars - Countries with above 1k TB case pr. 100k**:
+
+```{r}
+#ORDERED version of the scatter plot:
+#In these countries you have more than 1000 people with TB for every 100k citizens that you check: 
+
+TB_age_sex |> #Updating this tibble to make it cover all countries
+  group_by(country) |>
+  summarise(
+    mean_best = mean(total_TB_cases_pr_100k_best, na.rm = TRUE), #Ensures only 1 row. 
+    min_val  = min(total_TB_cases_pr_100k_min,  na.rm = TRUE),
+    max_val  = max(total_TB_cases_pr_100k_max,  na.rm = TRUE)
+  ) |>
+  filter(mean_best >= 1000) |> #Above or equal 1k out of 100k
+
+  ggplot(
+    aes(x = mean_best, y = fct_reorder(country, mean_best))
+  ) +
+  geom_errorbarh(aes(xmin = min_val, xmax = max_val), height = 0.2) +
+  geom_point(size = 1.5, color = "orange") +
+  labs(
+    x = "TB cases per 100k\n(Best estimate with min/max)",
+    y = "Country",
+    title = "TB Cases per 100k with error bars\n(Only countries with 1k <= TB case pr. 100k)"
+  ) +
+  #theme(axis.text.y = element_text(size = 10, margin = margin(r = 5))) +
+  theme(
+  axis.text.y = element_text(size = 10, margin = margin(r = 6)),
+  axis.ticks.y = element_line(),
+  panel.grid.major.y = element_blank()
+) +
+  theme_minimal()
+```
+
+This gives an overview with some of the countries with the highest TB burden (based on the TB for 100k pr. capita standardized metric).
+
+As an extra bonus, we can check how many of the top 10 countries with most TB cases are part of this subset:
+
+```{r}
+TB_age_sex |> #Updating this tibble to make it cover all countries
+  group_by(country) |>
+  summarise(
+    mean_best = mean(total_TB_cases_pr_100k_best, na.rm = TRUE), #Ensures only 1 row. 
+    min_val  = min(total_TB_cases_pr_100k_min,  na.rm = TRUE),
+    max_val  = max(total_TB_cases_pr_100k_max,  na.rm = TRUE)
+  ) |>
+  filter(mean_best >= 1000) |> #Above or equal 1k out of 100k
+  filter(country %in% top_10_countries)
+```
+
+Out of the 10 countries with most TB cases in the world, only 9 of them are among the countries above, which have 1k or more TB cases per citizen out of every 100k citizen.
+
+### Box plot - Sex distribution of TB cases pr. 100k:
+
+```{r}
+#Boxplot - Sexes and TB cases: 
+
+TB_age_sex |>
+  group_by(country, sex) |>
+  summarise( #getting the summed TB case values for each country and sex.
+    TB_best_100k = sum(TB_cases_best)/first(population_size)*10^5, #Use first(),
+    # as the same value is repeated on several rows, for each country. 
+    TB_min_100k = sum(TB_cases_min)/first(population_size)*10^5,
+    TB_max_100k = sum(TB_cases_max)/first(population_size)*10^5,
+  ) |>
+  
+  #The box plot:
+  ggplot(aes(y = TB_best_100k, x = sex)) +  #It will be the distribution of TB pr. 100k for every sex group. 
+    geom_boxplot(alpha = 1, fill = "orange") +
+    theme(legend.position = "none") +
+  
+  labs(
+    x = "Sex",
+    y = "TB cases per 100k, for each sex, for country\n(Best estimate)",
+    title = "Sex-divided amount of TB cases pr. 100k citizens"
+  )
+
+```
+
+On a worldwide basis, there seems to be no statistical significant difference between male, female and the both group.
+
+**Same plot as above, but only for the top 10 countries (TB cases pr. 100k citizens):**
+
+```{r}
+#Boxplot - Sexes and TB cases: 
+
+TB_age_sex |>
+  group_by(country, sex) |>
+  summarise( #getting the summed TB case values for each country and sex.
+    TB_best_100k = sum(TB_cases_best)/first(population_size)*10^5, #Use first(),
+    # as the same value is repeated on several rows, for each country. 
+    TB_min_100k = sum(TB_cases_min)/first(population_size)*10^5,
+    TB_max_100k = sum(TB_cases_max)/first(population_size)*10^5,
+  ) |>
+  filter(country %in% top_10_countries_100k) |> #<-- The new change. 
+  
+  #The box plot:
+  ggplot(aes(y = TB_best_100k, x = sex)) +  #It will be the distribution of TB pr. 100k for every sex group. 
+    geom_boxplot(alpha = 1, fill = "orange") +
+    theme(legend.position = "none") +
+  
+  labs(
+    x = "Sex",
+    y = "TB cases per 100k, for each sex, for country\n(Best estimate)",
+    title = "Sex-divided amount of TB cases pr. 100k citizens\nOnly for the 10 countries with highest TB cases pr. 100k"
+  )
+```
+
+When we look at these countries with much higher TB burden, we start to observe a much more noticeable difference between the sexes.
+
+Males generally tend to have more TB in these countries.
+
+It appears odd that the "both" group deviates so much from both the male and female group.
+
+It might be due to a difference in how the "both" group data was gathered and subsequently used to estimate for.
+
+### **Scatter plot - Sex distribution of the TB case intervals (pr. 100k)** for each of the top 10 most TB burdened countries (pr. 100k): 
+
+```{r}
+#Scatter plot for TB cases for different sexes 
+#in top 10 most infected countries (per capita, 100k)
+
+TB_age_sex |>
+  group_by(country, sex) |>
+  summarise( #getting the summed TB case values for each country and sex.
+    TB_best_100k = sum(TB_cases_best)/first(population_size)*10^5, #Use first(),
+    # as the same value is repeated on several rows, for each country. 
+    TB_min_100k = sum(TB_cases_min)/first(population_size)*10^5,
+    TB_max_100k = sum(TB_cases_max)/first(population_size)*10^5,
+  ) |>
+  filter(country %in% top_10_countries_100k) |>
+  ggplot(aes(x = TB_best_100k, y = country, color = sex)) +
+    geom_point(position = position_dodge(width = 0.5), size = 3) +
+    geom_errorbarh(
+      aes(xmin = TB_min_100k, xmax = TB_max_100k),
+      position = position_dodge(width = 0.5),
+      height = 0.4
+    ) +
+    labs(
+      x = "TB cases per 100k\n(Best estimate with min/max)",
+      y = "Country",
+      title = "TB cases pr. 100k by sex\n(Countries with top 10 most TB cases pr. 100k)"
+    ) +
+    theme_minimal()
+```
+
+Again, we note the huge deviation of the "both" sex group.
+
+This might be attributable to the likely difference between the data where they gathered sex data and the ones where they didn't gather this data.
+
+This could e.g. be due to reasons like maybe the sex-unspecific surveys TB inspections where able to detect more TB patients.
+
+### Bar chart - Age group distribution: 
+
+Quick look at the different age groups:
+
+```{r}
+unique(TB_age_sex$age_group)
+```
+
+**Very important notice**:
+
+Regarding the standardized data.
+
+So far we have worked with the TB cases pr. 100k citizens.
+
+This made sense since we, up until now, always knew how many people lived in the country (population size). And this therefore allowed us to perform this scaling.
+
+However, when we work exclusively with age groups, independent of the countries, we will no longer be able to calculate with this scaling.
+
+Due to the reason stated above + the general properties of compositional data, we can't simply calculate the standardized data (TB pr. 100k) for a given age group in a given country, and then add it to the same age group in different countries.
+
+(*Shout-out to the DTU course, 23257 Compositional data analysis with applications in genomics, for teaching about this type of stuff*).
+
+Therefore, we will **NOT** work with TB per 100k standardized data in this section.
+
+And we will instead work with the total amount of TB cases.
+
+```{r}
+TB_age_sex
+```
+
+**Worldwide, TB per. 100k - age distribution:**
+
+```{r}
+#Worldwide amount of TB cases, distributed in age groups.
+#Not standardized TB case data! 
+
+TB_age_sex |>
+  group_by(age_group) |>
+  summarise(
+    TB_best = sum(TB_cases_best), #Summing the amount of total TB cases for this group
+    TB_min = sum(TB_cases_min),
+    TB_max = sum(TB_cases_max),
+    
+  ) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower) #This part helps order the age group intervals correctly. 
+  ) |>
+  ggplot(aes(x = fct_reorder(age_group, age_lower), y = TB_best)) +
+  #fct_reorder orders the age groups according to the lower bound (age_lower). 
+  
+  geom_col(fill = "orange") +
+  
+  #Error bars:
+  geom_errorbar(
+    aes(ymin = TB_min, ymax = TB_max),
+    width = 0.2
+  ) +
+  
+  labs(
+    x = "Age group",
+    y = "Total TB cases",
+    title = "Global TB cases divided into age groups\n(Not standardized pr. 100k)"
+  ) +
+  theme_minimal()
+```
+
+Upon closer inspection of the bar chart that the following age groups were not as interesting to plot for, given that we are interest in getting a more linear interpretation of the age groups and how they are affected by TB:
+
+15+ & 18+ & all & 0-14
+
+**Worldwide, TB cases - with filtered age groups:**
+
+```{r}
+#Worldwide amount of TB cases, distributed in age groups.
+#Shown in total TB cases.  
+
+TB_age_sex |>
+  group_by(age_group) |>
+  summarise(
+    TB_best = sum(TB_cases_best), #Summing the amount of total TB cases for this group
+    TB_min = sum(TB_cases_min),
+    TB_max = sum(TB_cases_max),
+    
+  ) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower) #This part helps order the age group intervals correctly. 
+  ) |>
+  
+  filter(!age_group %in% c("15+", "18+", "all", "0-14")) |> #<--- New change! 
+  #Removing undesirable age groups.
+  
+  ggplot(aes(x = fct_reorder(age_group, age_lower), y = TB_best)) +
+  #fct_reorder orders the age groups according to the lower bound (age_lower). 
+  
+  geom_col(fill = "orange") +
+  
+  #Error bars: 
+  geom_errorbar(
+    aes(ymin = TB_min, ymax = TB_max),
+    width = 0.2
+  ) +
+  
+  labs(
+    x = "Age group",
+    y = "Total TB cases",
+    title = "Global TB cases divided into age groups\n(With filtered age groups)"
+  ) +
+  theme_minimal()
+```
+
+Notably, it is not surprising that 20-24 is lower than the flanking bars, as it spans a shorter set of years and therefore defines a smaller group.
+
+Kids (younger than 15) generally appear to be less infected. This could be explained by the TB vaccine, namely BCG, being more protective in kids.
+
+Source:
+
+<https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/research-innovation/vaccines#:~:text=Neonatal%20BCG%20vaccination%20offers%20partial,the%20majority%20of%20TB%20transmission.>
+
+As we went through in one of the earlier scripts, kids younger than 5 years are usually also more vulnerable to TB infection, and therefore preventative treatment of TB for kids younger than 5 years is usually a higher priority compared to the overall household average.
+
+**Note regarding the error bars**:
+
+Even if the error bars look slightly comedic, it is the proper scientific practice to always address the error of one's data - even if that range might be close to 0.
+
+**Top 10 most TB infected countries, total TB cases - with filtered age groups:**
+
+```{r}
+#Worldwide amount of TB cases, distributed in age groups.
+#Shown in total TB cases.  
+
+TB_age_sex |>
+  group_by(age_group) |>
+  filter(country %in% top_10_countries_100k) |> #<-- New change
+  summarise(
+    TB_best = sum(TB_cases_best), #Summing the amount of total TB cases for this group
+    TB_min = sum(TB_cases_min),
+    TB_max = sum(TB_cases_max),
+    
+  ) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower) #This part helps order the age group intervals correctly. 
+  ) |>
+  
+  filter(!age_group %in% c("15+", "18+", "all", "0-14")) |> #<--- New change! 
+  #Removing undesirable age groups.
+  
+  ggplot(aes(x = fct_reorder(age_group, age_lower), y = TB_best)) +
+  #fct_reorder orders the age groups according to the lower bound (age_lower). 
+  
+  geom_col(fill = "orange") +
+  
+  #Error bars: 
+  geom_errorbar(
+    aes(ymin = TB_min, ymax = TB_max),
+    width = 0.2
+  ) +
+  
+  labs(
+    x = "Age group",
+    y = "Total TB cases",
+    title = "Top 10 most TB burdened countries divided into age groups\n(With filtered age groups)"
+  ) +
+  theme_minimal()
+
+
+```
+
+The overall trends don't really change compared to the plot for the global TB infections.
+
+(Although the error bars provide some quite wacky intervals).
+
+### **Bar chart - TB cases relative to risk factors:** 
+
+We are again working with the countries.
+
+Therefore we can go back to working with the standardized data.
+
+```{r}
+TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  group_by(country, risk_factor) |>
+  summarise(
+    TB_cases_best = sum(TB_cases_best),
+    TB_cases_min = sum(TB_cases_min),
+    TB_cases_max = sum(TB_cases_max),
+    population_size = first(population_size),
+    
+    TB_cases_best_100k = TB_cases_best/population_size*10^5,
+    TB_cases_min_100k = TB_cases_min/population_size*10^5,
+    TB_cases_max_100k = TB_cases_max/population_size*10^5,
+  )
+```
+
+**Top 10 most TB burdened countries - Risk factor distribution:**
+
+```{r}
+TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  group_by(country, risk_factor) |>
+  summarise(
+    TB_cases_best = sum(TB_cases_best),
+    TB_cases_min = sum(TB_cases_min),
+    TB_cases_max = sum(TB_cases_max),
+    population_size = first(population_size),
+    
+    TB_cases_best_100k = TB_cases_best/population_size*10^5,
+    TB_cases_min_100k = TB_cases_min/population_size*10^5,
+    TB_cases_max_100k = TB_cases_max/population_size*10^5,
+  ) |>
+  
+  ggplot(aes(x = country,
+           y = TB_cases_best_100k,
+           fill = risk_factor)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "TB cases by risk factor\nTop 10 most TB burdened countries (pr. 100k)",
+    x = "Country",
+    y = "TB cases (pr. 100k)\n(best estimate)",
+    fill = "Risk factor"
+  ) +
+  
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 55, hjust = 1))
+```
+
+Overall, we can deduce that the risk factor TB cases largely constitute a minority of TB cases in the top 10 most TB burdened countries.
+
+**Same plot as above, but with error bars (not very readable):**
+
+```{r}
+dodge <- position_dodge(width = 0.9) #Offset for the error bars and plot bars.  
+
+TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  group_by(country, risk_factor) |>
+  summarise(
+    TB_cases_best = sum(TB_cases_best),
+    TB_cases_min = sum(TB_cases_min),
+    TB_cases_max = sum(TB_cases_max),
+    population_size = first(population_size),
+    
+    TB_cases_best_100k = TB_cases_best/population_size*1e5,
+    TB_cases_min_100k = TB_cases_min/population_size*1e5,
+    TB_cases_max_100k = TB_cases_max/population_size*1e5
+  ) |>
+  
+  ggplot(aes(x = country,
+             y = TB_cases_best_100k,
+             fill = risk_factor)) +
+  geom_col(position = dodge) +
+  
+  geom_errorbar(
+    aes(ymin = TB_cases_min_100k, ymax = TB_cases_max_100k),
+    width = 0.4,
+    position = dodge
+  ) +
+  
+  labs(
+    title = "TB cases by risk factor\nTop 10 most TB burdened countries (pr. 100k)\n(With error bars)",
+    x = "Country",
+    y = "TB cases (pr. 100k)",
+    fill = "Risk factor"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 55, hjust = 1))
+
+```
+
+Let's have a better look at only the risk factor groups.
+
+**Bar charts - Only the risk factor group:**
+
+```{r}
+TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  group_by(country, risk_factor) |>
+  filter(risk_factor != "no risk factor") |>
+  summarise(
+    TB_cases_best = sum(TB_cases_best),
+    TB_cases_min = sum(TB_cases_min),
+    TB_cases_max = sum(TB_cases_max),
+    population_size = first(population_size),
+    
+    TB_cases_best_100k = TB_cases_best/population_size*10^5,
+    TB_cases_min_100k = TB_cases_min/population_size*10^5,
+    TB_cases_max_100k = TB_cases_max/population_size*10^5,
+  ) |>
+  
+  ggplot(aes(x = country,
+           y = TB_cases_best_100k,
+           fill = risk_factor)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "TB cases by risk factor\nTop 10 most TB burdened countries (pr. 100k)\n(No non-risk group)",
+    x = "Country",
+    y = "TB cases (pr. 100k)\n(best estimate)",
+    fill = "Risk factor"
+  ) +
+  
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 55, hjust = 1))
+```
+
+HIV seems to be a reasonably high risk factor in some of the top 10 most TB burdened countries (pr. 100k).
+
+With that being said, none of the risk factor groups seemingly appear to be extra ordinarily prevalent across all of the data.
+
+Let's verify with a box plot for the whole world population.
+
+### Box plot - Global risk factor distribution:
+
+```{r}
+TB_age_sex |>
+  group_by(country, risk_factor) |>
+  filter(risk_factor != "no risk factor") |> #Note: If you comment this line, then you will be able to view the "no risk factor" boxplot as well. But it skews the plot a bit. 
+  summarise(
+    TB_cases_best = sum(TB_cases_best),
+    TB_cases_min = sum(TB_cases_min),
+    TB_cases_max = sum(TB_cases_max),
+    population_size = first(population_size),
+    
+    TB_cases_best_100k = TB_cases_best/population_size*10^5,
+    TB_cases_min_100k = TB_cases_min/population_size*10^5,
+    TB_cases_max_100k = TB_cases_max/population_size*10^5,
+  ) |>
+  
+  #The box plot:
+  ggplot(aes(y = TB_cases_best_100k, x = risk_factor)) +  
+    geom_boxplot(alpha = 1, fill = "orange") +
+    theme(legend.position = "none") +
+  
+  labs(
+    x = "Risk factor",
+    y = "TB cases per 100k, risk factor, for country\n(Best estimate)",
+    title = "Risk factor-divided amount of TB cases pr. 100k citizens"
+  )
+
+```
+
+As we also observed on the bar chart from before, there is not really any notable difference between the distribution of TB risk factor cases.
+
+Although HIV appears to have some high outlier cases in certain countries (which we also observed on the previous bar chart).
+
+**Same as above - but only for top 10 TB burdened countries:**
+
+```{r}
+TB_age_sex |>
+  group_by(country, risk_factor) |>
+  filter(country %in% top_10_countries_100k) |>
+  filter(risk_factor != "no risk factor") |>
+  summarise(
+    TB_cases_best = sum(TB_cases_best),
+    TB_cases_min = sum(TB_cases_min),
+    TB_cases_max = sum(TB_cases_max),
+    population_size = first(population_size),
+    
+    TB_cases_best_100k = TB_cases_best/population_size*10^5,
+    TB_cases_min_100k = TB_cases_min/population_size*10^5,
+    TB_cases_max_100k = TB_cases_max/population_size*10^5,
+  ) |>
+  
+  #The box plot:
+  ggplot(aes(y = TB_cases_best_100k, x = risk_factor)) +  
+    geom_boxplot(alpha = 1, fill = "orange") +
+    theme(legend.position = "none") +
+  
+  labs(
+    x = "Sex",
+    y = "TB cases per 100k, risk factor, for country\n(Best estimate)",
+    title = "Risk factor-divided amount of TB cases pr. 100k citizens\nFor the top 10 TB  burdened countries (cases pr. 100k)"
+  )
+
+```
+
+## Multivariate analysis:
+
+### Heatmap plot:
+
+**Heatmap - age relative to risk factor:**
+
+```{r}
+TB_age_sex |>
+  ggplot(aes(x = age_group, y = risk_factor, fill = TB_cases_pr_100k_best)) +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  labs(
+    title = "TB cases pr. 100k by age group and risk factor",
+    x = "Age group",
+    y = "Risk factor",
+    fill = "TB per 100k"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 55, hjust = 1)
+  )
+```
+
+Note: Transparent fields are **NA values**.
+
+Although the intention behind the heatmap was to potentially uncover interesting relationships between the risk factor labels and the age groups, we instead ended uncovering a flawed aspect of the infrastructure of the entire dataset.
+
+The HIV and undernourishment is e.g. only present in the 'age = "all' group.
+
+And the diabetes and alcoholism and smoking labels are e.g. also only available for the 'age=15+' and 'age=18+' data.
+
+This reveals the underlying lacking of uniformity in certain aspects of the dataset.
+
+**Heatmap - Age groups relative to sex:**
+
+```{r}
+TB_age_sex |>
+  ggplot(aes(x = age_group, y = sex, fill = TB_cases_pr_100k_best)) +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  labs(
+    title = "TB cases pr. 100k by age group and risk factor",
+    x = "Age group",
+    y = "Sex",
+    fill = "TB per 100k"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 55, hjust = 1)
+  )
+
+```
+
+This time we have uncovered that the data for female and male is not available for the 'age=18+' data.
+
+**Heatmap - Age group relative to the top 10 most TB burdened countries (pr. 100k):**
+
+```{r}
+TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  ggplot(aes(x = age_group, y = country, fill = TB_cases_pr_100k_best)) +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  labs(
+    title = "TB cases pr. 100k by age group and country",
+    x = "Age group",
+    y = "Country",
+    fill = "TB per 100k"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 55, hjust = 1)
+  )
+
+```
+
+This matches pretty well what we previously observed on the bar charts, before we started filtering away some of the inconsistent age groups.
+
+### PCA biplot: 
+
+```{r}
+#2d PCA biplot for the top 10 most TB burdened countries (pr. 100k)
+#Helps highlight some of the multivariate relationships.
+
+# 1. Filter to the relevant countries & clean
+pca_data <- TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  mutate(
+    risk_factor = factor(risk_factor),
+    age_group   = factor(age_group)
+  ) |>
+  
+  
+  # 2. Compute TB per 100k for PCA
+  mutate(TB_100k = TB_cases_best / population_size * 1e5) |>
+  
+  # 3. Aggregate: country × age_group × risk_factor
+  group_by(country, age_group, risk_factor) |>
+  summarise(TB_100k = sum(TB_100k), .groups = "drop") |>
+  
+  # 4. Wide format: rows = country, columns = age:risk combinations
+  unite(feature, age_group, risk_factor, sep = "_") |>
+  pivot_wider(
+    names_from = feature,
+    values_from = TB_100k,
+    values_fill = 0   # missing combinations = 0
+  )
+
+# 5. Prepare matrix for PCA
+pca_matrix <- pca_data |> 
+  select(-country) |> 
+  as.matrix()
+
+rownames(pca_matrix) <- pca_data$country
+
+# 6. Run PCA
+pca_res <- prcomp(pca_matrix, scale. = TRUE)
+
+# 7. PCA biplot using factoextra
+fviz_pca_biplot(
+  pca_res,
+  repel = TRUE,
+  col.var = "red",      # variable arrows
+  col.ind = "black",    # country labels
+  title = "PCA biplot of TB profiles (risk factor × age group)"
+)
+```
+
+Note: This plot gets quite cluttered, as we have too many groups for the loading vectors.
+
+Instead we can try to group some of them.
+
+```{r}
+#PCA biplot for the top 10 most TB burdened countries (pr. 100k)
+
+#Same biplot, but with less loading vectors (better groupíng): 
+
+# 1. Filter to the relevant countries & clean
+pca_data <- TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  mutate(
+    risk_factor = factor(risk_factor),
+    age_group   = factor(age_group)
+  ) |>
+  mutate(
+    age_group_collapsed = case_when(                         
+      
+      #NEW PART IS HERE:
+      
+      age_group %in% c("0-14", "0-4", "5-9", "5-14", "10-14") ~ "child",
+      age_group %in% c("15+", "18+", "all") ~ "*mixed_age*",
+      TRUE ~ "adult"
+    )
+    #We group the age groups into 3 different groups: child, adult and *mixed_age*. 
+  ) |>
+
+  
+  
+  # 2. Compute TB per 100k for PCA
+  mutate(TB_100k = TB_cases_best / population_size * 1e5) |>
+  
+  # 3. Aggregate: country × age_group_collapsed × risk_factor
+  group_by(country, age_group_collapsed, risk_factor) |>
+  summarise(TB_100k = sum(TB_100k), .groups = "drop") |>
+  
+  # 4. Wide format: rows = country, columns = age:risk combinations
+  unite(feature, age_group_collapsed, risk_factor, sep = "_") |>
+  pivot_wider(
+    names_from = feature,
+    values_from = TB_100k,
+    values_fill = 0   # missing combinations = 0
+  )
+
+# 5. Prepare matrix for PCA
+pca_matrix <- pca_data |> 
+  select(-country) |> 
+  as.matrix()
+
+rownames(pca_matrix) <- pca_data$country
+
+# 6. Run PCA
+pca_res <- prcomp(pca_matrix, scale. = TRUE)
+
+# 7. PCA biplot using factoextra
+fviz_pca_biplot(
+  pca_res,
+  repel = TRUE,
+  col.var = "red",      # variable arrows
+  col.ind = "black",    # country labels
+  title = "PCA biplot of TB profiles (risk factor × age group)"
+)
+```
+
+We note that countries like Myanmar, Djibouti and Timor-Leste is associated with undernourishment, etc.
+
+However, any conclusions which can be drawn from this PCA biplot might be incorrect due to the missing data - i.e. what we saw in the heat map.
+
+E.g. since the 'undernourishment' label is only present in data which only has 'age=all' (goes into the 'mixed age' group), then this will prevent us from intepreting anything on a broader level.
+
+Although if compare with out bar chart from earlier of the different risk factors, we can observe that Myanmar, Djibouti and Timor-Leste have the most undernourishment + TB cases, relative to the other risk factor labels in that country.
