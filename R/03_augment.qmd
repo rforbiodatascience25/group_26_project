@@ -89,7 +89,7 @@ slice_sample(ltbi_data, n=5)
 
 ------------------------------------------------------------------------
 
-### \*Data of 2024 - Joining and augmenting: 
+### \*Data of 2024 - Joining and augmenting:
 
 **Joining the data of 2024:**
 

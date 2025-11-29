@@ -73,7 +73,6 @@ TB_burden   <- load_data(data_file)
 TB_burden
 ```
 
-
 Dictionary:
 
 ```{r}
@@ -100,7 +99,6 @@ TB_age_sex_joined |> glimpse()
 
 ```
 
-
 TB cases per 100k
 
 ```{r}
@@ -121,7 +119,6 @@ TB_summary <- TB_age_sex |>
 
 ```
 
-
 Box plot of top 10 countries:
 
 ```{r}
@@ -137,16 +134,13 @@ ggplot(TB_top, aes(y = country, x = TB_cases_best)) +
   theme_minimal()
 ```
 
-
 **Description for TB_10_years_joined**
 
 We combined three WHO datasets — TB burden estimates, MDR/RR-TB burden estimates, and TB infection in household contacts — into a single multi-country, multi-year panel covering approximately 10 years. The merged dataset contains measures of TB incidence and mortality, MDR/RR-TB incidence, and estimated household infection rates for each country–year.
 
 This integrated dataset allows us to describe global TB trends, compare drug-resistant and drug-sensitive TB, and evaluate household transmission indicators.
 
-(Note to self: Multidrug-resistant tuberculosis (MDR-TB) is defined as disease due to Mycobacterium tuberculosis that is resistant to isoniazid (H) and rifampicin (R) with or without resistance to other drugs.
-RR - Rifampicin resistant)
-
+(Note to self: Multidrug-resistant tuberculosis (MDR-TB) is defined as disease due to Mycobacterium tuberculosis that is resistant to isoniazid (H) and rifampicin (R) with or without resistance to other drugs. RR - Rifampicin resistant)
 
 ```{r}
 TB_10_years_joined |> glimpse()
@@ -166,8 +160,6 @@ print(dict_filtered)
 ```
 
 After considering the definitions, I can select only the important variables that hold the most descriptive information to get to know the data. I am selecting data per 100k to get the most comparable summary.
-
-
 
 ```{r}
 df10_selection <- df10 |> 
@@ -190,7 +182,6 @@ df10_selection
 
 ```
 
-
 Summary statistics for main TB variables
 
 ```{r}
@@ -200,9 +191,7 @@ df10_selection %>%
                    na.rm = TRUE))
 ```
 
-
 Missingness summary table (of selected values for better clarity)
-
 
 ```{r}
 missing_summary <- df10_selection %>%
@@ -212,6 +201,7 @@ missing_summary <- df10_selection %>%
 missing_summary
 
 ```
+
 Plot:
 
 ```{r}
@@ -234,8 +224,6 @@ ggplot(missing_long, aes(x = variable, y = row, fill = is_missing)) +
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
   )
 ```
-
-
 
 Missingness per country
 
@@ -281,7 +269,6 @@ ggplot(missing_long, aes(x = variable, y = row, fill = is_missing)) +
 
 ```
 
-
 Global average of trends over time:
 
 ```{r}
@@ -299,6 +286,7 @@ global_yearly_trends <- df10_selection |>
 
 global_yearly_trends
 ```
+
 Prepare for plotting - to long shape and standardization, because variables are on different scales (per different number of people)
 
 ```{r}
@@ -316,8 +304,6 @@ global_yearly_trends_long <- global_yearly_trends |>
 
 global_yearly_trends_long
 ```
-
-
 
 Exploratory plots
 
@@ -340,9 +326,6 @@ ggplot(global_yearly_trends_long, aes(x = year, y = value, color = variable)) +
   )
 ```
 
-INTERESTING!!!!! 
-Household contacts increased a lot during Covid-19 quarantine, is that related??
-
+INTERESTING!!!!! Household contacts increased a lot during Covid-19 quarantine, is that related??
 
 Maybe a question for the analysis.
-
