@@ -11,14 +11,9 @@ In this script, it's intended to give an explanation on data features, using dif
 -   The joined dataset which contains information from 2015 to 2024
 -   The WHO TB burden estimates \[\>1Mb\] dataset, as it contains information from previous years
 
+Overall, the document aims to do some light-weight analysis and data exploration, prior to the heavy-weight analysis in the subsequent 2x analysis files.
+
 ------------------------------------------------------------------------
-
-**Note to self - add this in all code chunks when wrapping up:**
-
-```{r}
-#| echo: true
-#| eval: true
-```
 
 **Loading relevant libraries:**
 
@@ -26,42 +21,40 @@ In this script, it's intended to give an explanation on data features, using dif
 library(tidyverse) 
 library(dplyr)
 library(ggplot2)
-```
 
-```{r}
 #Access to the function for loading the datasets and to save them
 source("99_proj_func.R")
 ```
 
 ------------------------------------------------------------------------
 
-**Loading data:**
+# **Loading data:**
 
-Joined dataset, year 2024:
+**Joined dataset, year 2024:**
 
 ```{r}
-#Loading age and sex and risk group data (2024 only): 
+#Loading age and sex and risk group data (2024 only) - Joined and augmented version of the data: 
 
 data_file          <- "TB_age_sex_joined.tsv"
 TB_age_sex_joined  <- load_data(data_file)
 
 #Display the data: 
-TB_age_sex_joined
+slice_sample(TB_age_sex_joined, n=5)
 ```
 
-Joined dataset, year 2015 to 2024:
+**Joined dataset, year 2015 to 2024:**
 
 ```{r}
-#Loading age and sex and risk group data (2024 only): 
+#Loading age and sex and risk group data (2024 only) - Joined version of the data: 
 
 data_file           <- "TB_10_years_joined.tsv"
 TB_10_years_joined  <- load_data(data_file)
 
 #Display the data: 
-TB_10_years_joined
+slice_sample(TB_10_years_joined, n=5)
 ```
 
-WHO TB burden estimates \[\>1Mb\]:
+**WHO TB burden estimates \[\>1Mb\]:**
 
 ```{r}
 #Loading TB burden estimates: 
@@ -70,10 +63,10 @@ data_file   <- "TB_burden.tsv"
 TB_burden   <- load_data(data_file)
 
 #Display the data: 
-TB_burden
+slice_sample(TB_burden, n=5)
 ```
 
-Dictionary:
+**Dictionary:**
 
 ```{r}
 #Loading the data dictionary: 
@@ -82,69 +75,127 @@ data_file   <- "TB_dictionary.csv"
 data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=dictionary"
 TB_dictionary <- raw_load_or_download(data_file, data_url)
 
-TB_dictionary
-
+slice_sample(TB_dictionary, n=5)
 ```
 
 ------------------------------------------------------------------------
 
-It's late, hope someone sees this before me, maybe some statistics and graphs would be fine, but nothing that complex, complex stuff should go into analysis part.
+# Data description: 
 
-**Description for TB_age_sex_joined**
+### **\*TB_age_sex_joined (2024) - Description:** 
 
 This dataset contains the number of TB cases across different countries, categorized by age group and gender. It also includes cases per 100,000 population, enabling standardized and comparable analysis between countries.
 
 ```{r}
-TB_age_sex_joined |> glimpse()
+slice_sample(TB_age_sex_joined, n=5)
 
 ```
 
-TB cases per 100k
+We can briefly explore the big differences between comparing countries based on their total TB cases vs comparing with TB cases pr. 100k citizens.
+
+**Scatter plot of the countries with the top 10 most *TB cases in total*:**
 
 ```{r}
-#Summary statistics for top10 countries with highes TB cases
-TB_summary <- TB_age_sex |>
+
+#Getting the 10 countries with highest total amount of TB cases:  
+top_10_countries <- TB_age_sex |>
+  group_by(country) |>
+  summarise(total_TB = first(total_TB_cases_best)) |>
+  arrange(desc(total_TB)) |>
+  slice_head(n = 10) |> 
+  pull(country)
+
+#Making a tibble for those countries, and plotting them: 
+TB_age_sex |>
   filter(country %in% top_10_countries) |>
   group_by(country) |>
   summarise(
     mean_best = sum(TB_cases_best, na.rm = TRUE), #Sum of TB cases for this country 
     min_val  = sum(TB_cases_min, na.rm = TRUE),
     max_val  = sum(TB_cases_max, na.rm = TRUE),
-    
-    #pr. 100k values
-    mean_best_100k = first(TB_cases_pr_100k_best), #Ensures only 1 row
-    min_val_100k  = first(TB_cases_pr_100k_min),
-    max_val_100k  = first(TB_cases_pr_100k_max),
-  )
-
-```
-
-Box plot of top 10 countries:
-
-```{r}
-# Box plot Countries with the top 10 most TB cases pr. 100k:
-
-TB_top <- TB_age_sex |> 
-  filter(country %in% top_10_countries)
-
-
-ggplot(TB_top, aes(y = country, x = TB_cases_best)) +
-  geom_boxplot(alpha = 0.7, fill = "orange") +
-  labs(x = "TB cases\n(Separated based on different metadata rows)", y = "Country") +
+  ) |> 
+  
+  ggplot(aes(x = mean_best, y = fct_reorder(country, mean_best))) +
+  #fct_reorder(country, mean_best) ensures that we order sort all countries,
+  #based on mean_best value (descending order). 
+  
+  geom_point(size = 3, color = "orange") +
+  geom_errorbarh(aes(xmin = min_val, xmax = max_val), height = 0.2) +
+  labs(
+    x = "TB cases\n(Best estimate with min/max)",
+    y = "Country",
+    title = "Top 10 Countries - Total TB cases, with error bars"
+  ) +
   theme_minimal()
 ```
 
-**Description for TB_10_years_joined**
+Note that really large countries like China and India is part of this graph.
 
-We combined three WHO datasets — TB burden estimates, MDR/RR-TB burden estimates, and TB infection in household contacts — into a single multi-country, multi-year panel covering approximately 10 years. The merged dataset contains measures of TB incidence and mortality, MDR/RR-TB incidence, and estimated household infection rates for each country–year.
+That is not to state that TB is not a problem in these countries, but it is to highlight that the TB intensity might not be as bad as you might think.
+
+This will make sense once you glance at the following plot.
+
+**Scatter plot of the countries with the top 10 most *TB cases pr. 100k citizens (standardized)*:**
+
+```{r}
+#Making an object for storing the top 10 countries with most TB cases: 
+top_10_countries_100k <- TB_age_sex |>
+  group_by(country) |>
+  summarise(
+    total_TB_cases_pr_100k_best = first(total_TB_cases_pr_100k_best),
+    #Note: The value is constant for each country, so we just use first()
+    #in order to pick the first value (we want to reduce several rows  
+    #to 1 row pr. country) 
+    ) |>
+  arrange(desc(total_TB_cases_pr_100k_best)) |>
+  slice_head(n = 10) |>
+  pull(country)
+
+#Making a tibble for those countries, and plotting them: 
+TB_age_sex |>
+  filter(country %in% top_10_countries_100k) |>
+  group_by(country) |>
+  summarise(
+    mean_best = first(total_TB_cases_pr_100k_best),
+    min_val  = first(total_TB_cases_pr_100k_min),
+    max_val  = first(total_TB_cases_pr_100k_max),
+  ) |> 
+  
+  ggplot(aes(x = mean_best, y = fct_reorder(country, mean_best))) +
+  #fct_reorder(country, mean_best) ensures that we order sort all countries,
+  #based on mean_best value (descending order). 
+  
+  geom_point(size = 3, color = "orange") +
+  geom_errorbarh(aes(xmin = min_val, xmax = max_val), height = 0.2) +
+  labs(
+    x = "TB cases pr. 100k\n(Best estimate with min/max)",
+    y = "Country",
+    title = "Top 10 Countries - TB cases pr. 100k citizens, with error bars"
+  ) +
+  theme_minimal()
+
+```
+
+Would you look at that!
+
+Except for the Philippines, none of these countries were part of the plot for the "top 10 total TB cases countries".
+
+It goes to show that the standardized TB cases pr. 100k of citizens might be a better measure for TB disease intensity of a country.
+
+### **\*TB_10_years_joined (2015-2024) - Description:** 
+
+We combined three WHO datasets — TB burden estimates, MDR/RR-TB burden estimates, and TB infection in household contacts — into a single multi-country, multi-year panel covering approximately 10 years.
+
+The merged dataset contains measures of TB incidence and mortality, MDR/RR-TB incidence, and estimated household infection rates for each country–year.
 
 This integrated dataset allows us to describe global TB trends, compare drug-resistant and drug-sensitive TB, and evaluate household transmission indicators.
 
-(Note to self: Multidrug-resistant tuberculosis (MDR-TB) is defined as disease due to Mycobacterium tuberculosis that is resistant to isoniazid (H) and rifampicin (R) with or without resistance to other drugs. RR - Rifampicin resistant)
+(Note: Multidrug-resistant tuberculosis (MDR-TB) is defined as disease due to Mycobacterium tuberculosis that is resistant to isoniazid (H) and rifampicin (R) with or without resistance to other drugs. RR - Rifampicin resistant).
 
 ```{r}
-TB_10_years_joined |> glimpse()
-df10 <- TB_10_years_joined #just shortening the name so i don't have to type so much
+slice_sample(TB_10_years_joined, n=5)
+
+df10 <- TB_10_years_joined #just shortening the name so we don't have to type so much
 ```
 
 Definitions of all the variables that were not renamed:
@@ -159,7 +210,7 @@ dict_filtered <- TB_dictionary[c("variable_name", "definition")] |>
 print(dict_filtered)
 ```
 
-After considering the definitions, I can select only the important variables that hold the most descriptive information to get to know the data. I am selecting data per 100k to get the most comparable summary.
+After considering the definitions, we can select only the important variables that hold the most descriptive information to get to know the data. We are selecting data per 100k to get the most comparable summary.
 
 ```{r}
 df10_selection <- df10 |> 
@@ -191,7 +242,7 @@ df10_selection %>%
                    na.rm = TRUE))
 ```
 
-Missingness summary table (of selected values for better clarity)
+Summary table of NA values (of selected values for better clarity):
 
 ```{r}
 missing_summary <- df10_selection %>%
@@ -202,7 +253,7 @@ missing_summary
 
 ```
 
-Plot:
+**Heatmap which highlights where values are missing:**
 
 ```{r}
 missing_long <- df10_selection%>%
@@ -215,7 +266,7 @@ missing_long <- df10_selection%>%
 ggplot(missing_long, aes(x = variable, y = row, fill = is_missing)) +
   geom_tile() +
   scale_fill_manual(values = c("FALSE" = "white", "TRUE" = "black")) +
-  labs(title = "Missingness Heatmap",
+  labs(title = "Missing values - Heatmap",
        x = "Variable",
        y = "Row",
        fill = "Missing") +
@@ -225,36 +276,37 @@ ggplot(missing_long, aes(x = variable, y = row, fill = is_missing)) +
   )
 ```
 
-Missingness per country
+**Missing values per country:**
 
 ```{r}
-missing_by_country <- df10_selection %>%
-  group_by(country) %>%
+#Countries with most missing values: 
+missing_by_country <- df10_selection |>
+  group_by(country) |>
   summarise(
     total_rows = n(),
     total_missing = sum(is.na(across(everything()))),
     prop_missing = total_missing / (total_rows * ncol(df10))
-  ) %>%
+  ) |>
   arrange(desc(prop_missing)) |> 
   slice_head(n=10)
 
-#top 10 missing:
-df_top10 <- df10_selection %>%
-  filter(country %in% missing_by_country$country) %>%
+#Top 10 countries with most missing values:
+df_top10 <- df10_selection |>
+  filter(country %in% missing_by_country$country) |>
   mutate(row = row_number())
 
-#prep for missingness heatmap
-missing_long <- df_top10 %>%
-  mutate(across(-c(country, row), ~ is.na(.))) %>%  # logical missingness
+#Prepare for missing values heatmap: 
+missing_long <- df_top10 |>
+  mutate(across(-c(country, row), ~ is.na(.))) |>  # logical missing values
   pivot_longer(-c(country, row), names_to = "variable", values_to = "is_missing")
 
-#plot heatmap
+#Plot heatmap
 ggplot(missing_long, aes(x = variable, y = row, fill = is_missing)) +
   geom_tile() +
   facet_wrap(~ country, scales = "free_y") +  # separate heatmap per country
   scale_fill_manual(values = c("FALSE" = "white", "TRUE" = "black")) +
   labs(
-    title = "Missingness Heatmap for Top 10 Countries",
+    title = "Missing values - Heatmap for countries with the top 10 most missing values",
     x = "Variable",
     y = "Row",
     fill = "Missing"
@@ -265,14 +317,12 @@ ggplot(missing_long, aes(x = variable, y = row, fill = is_missing)) +
     strip.text = element_text(face = "bold")
   )
 
-
-
 ```
 
-Global average of trends over time:
+**Global average of trends over time:**
 
 ```{r}
-df10_selection |> glimpse()
+df10_selection
 ```
 
 ```{r}
@@ -305,14 +355,13 @@ global_yearly_trends_long <- global_yearly_trends |>
 global_yearly_trends_long
 ```
 
-Exploratory plots
-
-Global average of TB incidence over time
+**Exploratory plots -** **Global average of TB incidence over time:**
 
 ```{r}
 ggplot(global_yearly_trends_long, aes(x = year, y = value, color = variable)) +
   geom_line(size = 1.2) +
   geom_point(size = 2) +
+  scale_x_continuous(breaks = unique(global_yearly_trends_long$year)) +
   labs(
     title = "Global Yearly Trends",
     x = "Year",
@@ -326,6 +375,4 @@ ggplot(global_yearly_trends_long, aes(x = year, y = value, color = variable)) +
   )
 ```
 
-INTERESTING!!!!! Household contacts increased a lot during Covid-19 quarantine, is that related??
-
-Maybe a question for the analysis.
+Interestingly, household contacts seemed to have dropped rapidly during Covid-19 quarantine (happened around april of 2020), only to increase rapidly in the time afterwards.
