@@ -32,18 +32,18 @@ which countries have the highest TB data gaps?
 library(tidyverse) 
 library(dplyr)
 library(ggplot2)
-```
+library(maps)
+library(scales)
 
-```{r}
 #Access to the function for loading the datasets and to save them
 source("99_proj_func.R")
 ```
 
 ------------------------------------------------------------------------
 
-**Loading data:**
+# **Loading data:**
 
-Joined dataset, year 2015 to 2024:
+**Joined dataset, year 2015 to 2024:**
 
 ```{r}
 #Loading age and sex and risk group data (2024 only): 
@@ -55,8 +55,7 @@ TB_10_years_joined  <- load_data(data_file)
 TB_10_years_joined
 ```
 
-
-Dictionary:
+**Dictionary:**
 
 ```{r}
 #Loading the data dictionary: 
@@ -70,6 +69,10 @@ TB_dictionary
 ```
 
 ------------------------------------------------------------------------
+
+### Global cases: 
+
+**World map which displays the total TB cases:**
 
 ```{r}
 
@@ -117,11 +120,11 @@ ggplot(map_data_joined, aes(x = long, y = lat, group = group, fill = Preventive_
   )
 ```
 
-```{r}
-library(tidyverse)
-library(maps)
-library(scales)
+**World map of Tuberculosis Preventive Treatment (TPT):**
 
+TPT = treatment which is given to people who have a dormant TB infection, but who are at risk of getting an active TB infection.
+
+```{r}
 # 1. Load Data
 df <- TB_10_years
 
@@ -181,7 +184,7 @@ p_map <- ggplot(map_data_joined, aes(x = long, y = lat, group = group)) +
     labels = label_percent(scale = 1)
   ) +
   labs(
-    title = "TPT Coverage among Estimated Household Contacts (2024)",
+    title = "Tuberculosis preventive treatment coverage\namong estimated household contacts (2024)",
     subtitle = "Percentage of estimated contacts provided with TB preventive treatment",
   ) +
   theme_void() +
@@ -195,6 +198,8 @@ p_map <- ggplot(map_data_joined, aes(x = long, y = lat, group = group)) +
 
 print(p_map)
 ```
+
+**World map of TB cases pr. 100k citizens:**
 
 ```{r}
 # 1. Load Data
@@ -237,6 +242,8 @@ p_map_inc <- ggplot(map_data_joined, aes(x = long, y = lat, group = group)) +
 
 print(p_map_inc)
 ```
+
+**Bar chart - Total amount of people provided with TB Preventive Treatment (TPT):**
 
 ```{r}
 # 1. Load Data
@@ -314,8 +321,9 @@ ggplot(plot_data, aes(x = year, y = Number_on_TPT, fill = Category)) +
   )
 ```
 
-```{r}
+**Line plot - TB preventive treatment (TPT) coverage, comparing overall household contacts with children under 5 years:**
 
+```{r}
 # Load and Prep Data
 df <- TB_10_years 
 df_clean <- df |>
@@ -351,6 +359,10 @@ p <- ggplot(global_trends, aes(x = year)) +
 
 print(p)
 ```
+
+Children under 5 years of age are a priority group for WHO’s TB preventive treatment (TPT), because they are at significantly higher risk of rapid progression from TB infection to active disease and often develop more severe forms of TB.
+
+Therefore, this helps explain why we see more kids having received TPT.
 
 ```{r}
 latest_year = 2024
@@ -404,8 +416,12 @@ ggplot(gap_analysis, aes(x = Contacts_best, y = Preventive_Tx_Pct)) +
   theme_bw() +
   theme(legend.position = "bottom")
 ```
- 
-**AMR resistance insights:**
+
+This gap plot helps us identify countries where there are a high TB household contact burden, but where the TB preventive treatment (TPT) is low (insufficient coverage).
+
+I.e. these countries are faced with the problem: the burden is high, but treatment coverage is low.
+
+### **AMR resistance insights:**
 
 One of the first interesting questions that arise is how is the trending of AMR in TB.
 
@@ -416,32 +432,47 @@ TB_10_years_joined |>
     New = mean(rr_new, na.rm = TRUE),
     Treated = mean(rr_treated, na.rm = TRUE),
     Incidence = mean(rr_incidence, na.rm = TRUE)) |>
-  pivot_longer(cols = c(New, Treated, Incidence), names_to = 'type', values_to = 'value') |>
+  pivot_longer(cols = c(New, Treated, Incidence), 
+               names_to = 'type', values_to = 'value') |>
   ggplot(aes(x = year, y = value)) +
-  geom_point(alpha=0.45) +
+  geom_point(alpha = 0.45) +
   geom_smooth(aes(color = type)) +
   scale_color_brewer(palette = "Set2") +
-  facet_wrap(~type, ncol = 1, scales = 'free_y', 
-           strip.position = "left", #Change to Y axis to rename each subplot
-           labeller = labeller(type = c(  #Give specific names to each subplot
-             "New" = "Percentage (%)",
-             "Treated" = "Percentage (%)", 
-             "Incidence" = "Amount of Cases"))) +
+  facet_wrap(
+    ~ type, 
+    ncol = 1, 
+    scales = 'free_y',
+    strip.position = "left",
+    labeller = labeller(type = c(
+      "New" = "Percentage (%)",
+      "Treated" = "Percentage (%)",
+      "Incidence" = "Amount of Cases"
+    ))
+  ) +
+  scale_x_continuous(
+    breaks = unique(TB_10_years_joined$year)  #Ensures that the x-axis is shown as integer years. As we don't want it as decimal numbers. 
+  ) +
   labs(
-        x = "Year", 
-        y = "", 
-        title = "New, Treated and incident cases globaly per year", 
-        color = "Type") +
+    x = "Year",
+    y = "",
+    title = "Amount of new(%), treated(%) and TB incidences cases\n Global timeline",
+    color = "Type"
+  ) +
   theme_minimal()
+
 ```
 
-With this previous plot the results are expected and promising, even though the amount is minimal there's a disminution of cases each year. It could look like the "New" incidents its starting to go up again but more information would be needed for that, as its only year 2024 that had an increase.
- 
-Another question of interest its if there's any relationship between the drug resistancy and the mortality, and furthermore, if its something global or its per region.
+With this previous plot the results are expected and promising, even though the amount is minimal there's a diminution of cases each year.
+
+It could look like the "New" incidents its starting to go up again - but more information would be needed for that, as its only year 2024 that had an increase.
+
+Another question of interest its if there's any relationship between the drug resistance and the mortality, and furthermore, if its something global or its per region.
+
+**Drug resistance relative to mortality:**
 
 ```{r}
 TB_10_years_joined |>
-  ggplot(aes(x=(rr_incidence/e_pop_num*100000),y=e_mort_100k, color=g_whoregion.x)) +
+  ggplot(aes(x=(rr_incidence/e_pop_num*10^5),y=e_mort_100k, color=g_whoregion.x)) +
   geom_point(alpha = 0.45)+
   geom_smooth(method='lm', se = FALSE)+
   coord_cartesian(xlim=c(0,45), ylim=c(0,150)) +  #Eye calculated good limit for the plot
@@ -454,9 +485,25 @@ TB_10_years_joined |>
   theme_minimal()
 ```
 
-This graph shows a clear tendency of mortality to increase the same way as drug resistance increases. It's also  interesting how the regions that control better drug resistance as Europe have less mortality, whic of course is an expected outcome.
+AFR = Africa
 
-**Household insights:**
+AMR = America
+
+EMR = Eastern Mediterranean Region
+
+EUR = Europe
+
+SEA = South-East Asia
+
+WPR = Western Pacific Region
+
+This graph shows a clear linear tendency between mortality to increase relative to the increase of drug resistance.
+
+It's also interesting how the regions that control better drug resistance, as Europe, have less mortality, which of course is an expected outcome.
+
+Meanwhile, Eastern Mediterranean Region worst control of the mortality relative to drug resistance.
+
+### **Household insights:**
 
 ```{r}
 contacts_best <- TB_10_years_joined |>
@@ -515,13 +562,15 @@ ggplot(contacts_best_map, aes(long, lat, group = group))+
   legend.key.width = unit(2, "cm"))
 ```
 
-The map shows how India is the country with most TB contacts during 2024, which is not a huge surprise as its an overcrowded country.
+The map shows how India is the country with most TB contacts during 2024, which is perhaps not too surprising, given that it is an overcrowded country.
 
-Another hypothesis to prove was that if the amount of detection cound contribute to lower the amount of household contacts:
+Another hypothesis to prove was that if the amount of detection could contribute to lower the amount of household contacts:
+
+**Detection rate relative to household contacts pr. 100k citizens:**
 
 ```{r}
 TB_10_years_joined |>
-  ggplot(aes(x = (Contacts_best / e_pop_num) * 100000, y = c_cdr_pct)) +
+  ggplot(aes(x = (Contacts_best / e_pop_num) * 10^5, y = c_cdr_pct)) +
   geom_point(alpha = 0.25) +
   geom_smooth(method = "lm", se = FALSE, color = "red") +
   labs(
@@ -532,9 +581,11 @@ TB_10_years_joined |>
   theme_minimal()
 ```
 
-The plot shows that the hypothesis was correct, and also its interesting to find that there are some outlayers in the scatter, the maximum should be 100% but for some reason there are values as high as ~140%.
+The plot shows that the hypothesis was correct; countries with high detection rates (%) have a tendency to have lower household contacts pr. 100k.
 
-**HIV insights:**
+It is also interesting to there are some outlayers in the scatter plot, given that the maximum should be 100% but for some reason there are values as high as \~140%.
+
+### **HIV insights:**
 
 It's easy to conclude that having TB, HIV and RR cause more fatalities than having only TB. But comparing those who have TB and HIV from those who have RR - TB is an interesting topic:
 
@@ -559,5 +610,8 @@ labs(
   theme_minimal()
 ```
 
-From this boxplot it can be concluded that the hypothesis that having HIV and RR-TB cause more fatalities than having only TB. Nevertheless is interesting to find that there's more mortality in cases of HIV and TB than in cases of RR-TB. More data is needed to conclude the exact reason, but the most probable reason is the synergy between TB and HIV. Having HIV makes the immune system struggle to fight TB, and then TB can cause more inflamation which at the same time makes easier for HIV to replicate creating a chain reaction of problems.
+From this boxplot shows that there might be a weak tendency of HIV and RR-TB to cause more fatalities, relative to individuals who "only" have TB.
 
+Nevertheless is interesting to find that there's more mortality in cases of HIV and TB than in cases of RR-TB.
+
+More data is needed to conclude the exact reason, but the most probable reason is the synergy between TB and HIV. Having HIV makes the immune system struggle to fight TB, and then TB can cause more inflamation which at the same time makes easier for HIV to replicate creating a negative feedback loop.
