@@ -197,8 +197,8 @@ ggplot(map_filtered, aes(x = long, y = lat, group = group)) +
 
 ```{r}
 # Global analysis (2024)
-
-analysis_2024 <- df_2024 |>
+analysis_2024 <- TB_10_years_joined |>
+  filter(year = 2024) |>
   summarise(
     # 1. Estimated Household Contacts
     Global_Estimated_Contacts = sum(Contacts_best, na.rm = TRUE),
@@ -227,7 +227,7 @@ map_2024 <- map_TB_10_years_joined |>
   filter(year == 2024)
 
 # Plot
-ggplot(map_data_joined, aes(x = long, y = lat, group = group)) +
+ggplot(map_2024, aes(x = long, y = lat, group = group)) +
   geom_polygon(aes(fill = e_inc_100k), color = "white", size = 0.1) +
   # Using 'viridis' option 'inferno' or 'magma' for high contrast
   scale_fill_viridis_c(
@@ -238,7 +238,6 @@ ggplot(map_data_joined, aes(x = long, y = lat, group = group)) +
   ) +
   labs(
     title = "Global TB Incidence Rates (2024)",
-    caption = "Source: TB_10_years.csv (e_inc_100k)"
   ) +
   theme_void() +
   theme(legend.position = "bottom", legend.key.width = unit(2, "cm")) +
@@ -362,7 +361,7 @@ ggplot(plot_data, aes(x = year, y = Number_on_TPT, fill = Category)) +
 
 ```{r}
 # Load and Prep Data
-df <- TB_10_years 
+df <- TB_10_years_joined
 df_clean <- df |>
   mutate(TPT_Contacts_Num = Contacts_best * Preventive_Tx_Pct / 100)
 
@@ -402,11 +401,9 @@ Children under 5 years of age are a priority group for TB preventive treatment (
 Therefore, this helps explain why we see more kids having received TPT.
 
 ```{r}
-latest_year = 2024
-
 # 1. Prepare the Data
-gap_analysis <- TB_10_years |>
-  filter(year == latest_year) |>
+gap_analysis <- TB_10_years_joined |>
+  filter(year == 2024) |>
   filter(!is.na(Preventive_Tx_Pct) & !is.na(Contacts_best))
 
 # 2. Define Dynamic Thresholds
