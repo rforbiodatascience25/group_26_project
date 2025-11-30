@@ -1,26 +1,18 @@
 ---
-title: "Project presentation"
-authors: ""
+title: "Global Tuberculosis cases - WHO 2025 report\nProject Presentation - 22160 R for Bio Data Science"
+authors: "Henrik (s215065), Felipe (s252623), Lun (s253705),\
+Bhavya (s252641), Dhruva (s225191)"
 date: "2 dec 2025"
+
 format:
   revealjs:
-    footer: "Project_group26"
     slide-number: true
+    footer: ""
+    css: styles.css
+    code-font-size: "0.7em"
 ---
 
-# Global Tuberculosis cases - WHO 2025 report
-
-## Project Presentation - 22160 R for Bio Data Science
-
-Group 26\
-*2 December 2025*
-
-Henrik (s215065), Felipe (s252623), Lun (s253705),\
-Bhavya (s252641), Dhruva (s225191)
-
-------------------------------------------------------------------------
-
-# 1) Introduction to the data
+**1) Introduction to the data**
 
 Write your introduction here.
 
@@ -36,7 +28,7 @@ Write your introduction here.
 
 ------------------------------------------------------------------------
 
-# 2) Cleaning the data
+**2) Cleaning the data**
 
 ::: column-margin
 **Insert an image**
@@ -56,17 +48,10 @@ print("Hello world")
 
 ------------------------------------------------------------------------
 
-# 3) Augmenting the data. e.g. standardardized (pr. 100k) vs normal
-
-Reminder: 4 datasets in total. 3 of them span years from 2015 to 2024. 1 only contains data from 2024.
+**3) Augmenting the data. e.g. standardardized (pr. 100k) vs normal**
 
 **Joining datasets:**
-
--   2024 dataset (mostly unchanged, but we want the *population size*)
-
--   2015 to 2024 dataset (join all metadata based on country and year)
-
-```{r}
+``` r
 #Code for joining dataset (2024):
 
 #Making dataset containing all population data (2024) for every country. 
@@ -74,24 +59,20 @@ population_data_2024 <- TB_burden |>
   select(country, e_pop_num, year) |>
   filter(year == 2024) |>
   rename(population_size = e_pop_num)
-
-
 TB_age_sex <- left_join(TB_age_sex, population_data_2024, by = c("country", "year"))
-
 ```
 
-```{r}
-#Code for joining dataset (2015-2024): 
+``` r
+#Code for joining dataset (2015-2024):
 TB_10_years <- inner_join(TB_burden, mdr_rr_data, by = c("country", "year"))
 TB_10_years <- inner_join(TB_10_years, ltbi_data, by = c("country", "year"))
-
 ```
 
 The datasets contain TB cases for a given country. However, having a large population size (India and China), will also cause the overall TB cases to be larger for such countries.
 
 **Solution:** Standardize the data! (I.e. amount of people with TB out of every pr. 100,000 citizen).
 
-```{r}
+``` r
 #Data augmentation - Calculating the TB cases pr. 100k (standardizing the data): 
 
 TB_age_sex <- TB_age_sex |>
@@ -103,45 +84,29 @@ TB_age_sex <- TB_age_sex |>
     total_TB_cases_min = sum(TB_cases_min), 
     total_TB_cases_max = sum(TB_cases_max)
     ) |> 
-      #Note: These total values will be constant and will span multiple rows for each country. 
-  
-  
-      #For each row (specific info about age, sex and risk-factor group), 
       #calculate the pr. 100k amount of cases
   mutate( 
         TB_cases_pr_100k_best = TB_cases_best/population_size*10^5,
         TB_cases_pr_100k_min = TB_cases_min/population_size*10^5,
         TB_cases_pr_100k_max = TB_cases_max/population_size*10^5,
         )
-
-
 ```
-
 **Note**: We also got the population size from another dataset, which we joined with.
 
-::: column-margin
-**The top 10 countries with most TOTAL TB cases:**
+Top 3 countries with most TB cases (**total**): India, Indonesia, Philippines. 
 
-![](../results/04_1_top10_TB.png){width="400"}
-:::
+Top 3 TB burdened countries (**standardized**): Kiribati, Papua New Guinea, Philippines.
 
-::: column-margin
-**The top 10 countries with most STANDARIZED TB cases:**
 
-![](../results/04_2_top10_TB_100k.png){width="400"}
-:::
-
-(Think of it more like the actual "TB burden").
 
 ------------------------------------------------------------------------
 
-# 4) Analysis - 2024 dataset - TB + Risk factor distribution
+**4) Analysis - 2024 dataset - TB + Risk factor distribution**
 
 **Bar chart - TB + Risk factor cases in the top 10 most TB burdened countries:**
 
-```{r}
-#Code for making the plot of the TB + risk factor cases: 
-
+``` r
+#Code for making the plot of the TB + risk factor cases:
 TB_age_sex |>
   filter(country %in% top_10_countries_100k) |>
   group_by(country, risk_factor) |>
@@ -151,37 +116,21 @@ TB_age_sex |>
     TB_cases_min = sum(TB_cases_min),
     TB_cases_max = sum(TB_cases_max),
     population_size = first(population_size),
-    
     TB_cases_best_100k = TB_cases_best/population_size*10^5,
     TB_cases_min_100k = TB_cases_min/population_size*10^5,
     TB_cases_max_100k = TB_cases_max/population_size*10^5,
-  ) |>
-  
-  ggplot(aes(x = country,
-           y = TB_cases_best_100k,
-           fill = risk_factor)) +
-  geom_col(position = "dodge") +
-  labs(
-    title = "TB cases by risk factor\nTop 10 most TB burdened countries (pr. 100k)\n(No non-risk group)",
-    x = "Country",
-    y = "TB cases (pr. 100k)\n(best estimate)",
-    fill = "Risk factor"
-  ) +
-  
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 55, hjust = 1))
-
+  ) #... followed by ggplot
 ```
 
 ::: column-margin
 **Bar chart of the risk factor distribution:** **(Without the 'no risk factor' label)**
 
-![](../results/06_1_riskfactor_barchart.png){width="500"}
+![](../results/06_1_riskfactor_barchart.png){width="100"}
 :::
 
 **Box plots of the global risk factor distribution:**
 
-```{r}
+``` r
 TB_age_sex |>
   group_by(country, risk_factor) |>
   filter(risk_factor != "no risk factor") |>
@@ -194,84 +143,47 @@ TB_age_sex |>
     TB_cases_best_100k = TB_cases_best/population_size*10^5,
     TB_cases_min_100k = TB_cases_min/population_size*10^5,
     TB_cases_max_100k = TB_cases_max/population_size*10^5,
-  ) |>
-  
-  #The box plot:
-  ggplot(aes(y = TB_cases_best_100k, x = risk_factor)) +  
-    geom_boxplot(alpha = 1, fill = "orange") +
-    theme(legend.position = "none") +
-  
-  labs(
-    x = "Risk factor",
-    y = "TB cases per 100k, risk factor, for country\n(Best estimate)",
-    title = "Risk factor-divided amount of TB cases pr. 100k citizens"
-  )
-
+  ) #... followed by ggplot
 ```
 
 ::: column-margin
 **Box plot:**
 
-![](../results/06_2_riskfactor_boxplot.png){width="500"}
-:::
-
-Heatmap tells us where the risk factor labels are bit odd relative age groups:
-
-```{r}
-TB_age_sex |>
-  ggplot(aes(x = age_group, y = risk_factor, fill = TB_cases_pr_100k_best)) +
-  geom_tile() +
-  scale_fill_viridis_c() +
-  labs(
-    title = "TB cases pr. 100k by age group and risk factor",
-    x = "Age group",
-    y = "Risk factor",
-    fill = "TB per 100k"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 55, hjust = 1)
-  )
-```
-
-::: column-margin
-**Heatmap showing odd distribution of risk factor labels in the dataset:**
-
-![](../results/06_3_heatmap_riskfactors.png){width="500"}
+![](../results/06_2_riskfactor_boxplot.png){width="100"}
 :::
 
 ------------------------------------------------------------------------
 
-# 5) Analysis 2 - part 1
+**5) Analysis 2 - part 1**
 
 (E.g. global cases)
 
 ------------------------------------------------------------------------
 
-# 6) Analysis 2 - part 2
+**6) Analysis 2 - part 2**
 
 (E.g. age distribution)
 
 ------------------------------------------------------------------------
 
-# 7) Analysis 1 - part 1
+**7) Analysis 1 - part 1**
 
 (World map plots)
 
 ------------------------------------------------------------------------
 
-# 8) Analysis 1 - part 2
+**8) Analysis 1 - part 2**
 
 (Household contacts)
 
 ------------------------------------------------------------------------
 
-# 9) Analysis 1 - part 3
+**9) Analysis 1 - part 3**
 
 (linear models for drug resistance and mortality in the countries. Maybe also include the stuff on detection rate).
 
 ------------------------------------------------------------------------
 
-# 10) Conclusion/ wrapping up
+**10) Conclusion/ wrapping up**
 
 (Heatmaps and PCA for analysis 2)

@@ -200,6 +200,9 @@ ggsave(
   dpi = 300        # high quality
 )
 
+```
+
+```{r}
 plot
 ```
 

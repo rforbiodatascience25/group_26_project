@@ -1,0 +1,74 @@
+/* Base text sizing */
+.reveal p,
+.reveal li,
+.reveal table {
+  font-size: 12px;
+  line-height: 1.3;  /* Reduce line height */
+}
+
+.reveal h1 {
+  font-size: 40px;
+  margin-bottom: 0.3em;
+}
+.reveal h2 {
+  font-size: 34px;
+  margin-bottom: 0.3em;
+}
+.reveal h3 {
+  font-size: 28px;
+  margin-bottom: 0.3em;
+}
+
+/* Column margin sizing */
+.reveal .column-margin {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.reveal small {
+  font-size: 18px;
+}
+
+/* Code blocks*/
+.reveal pre {
+  padding: 4px !important;
+  margin: 0.3em 0 !important;  /* Reduce vertical margins */
+  font-size: 0.5em !important;
+  line-height: 1.2 !important;  /* Tighter line spacing in code */
+}
+
+.reveal code {
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+}
+
+.reveal pre code {
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  padding: 2px !important;
+}
+
+/* Reduce spacing around code output */
+.reveal .cell-output {
+  margin-top: 0.2em !important;
+  margin-bottom: 0.2em !important;
+}
+
+/* Compact lists */
+.reveal ul,
+.reveal ol {
+  margin: 0.3em 0;
+}
+
+.reveal li {
+  margin: 0.2em 0;
+}
+
+/* Reduce padding on slides overall */
+.reveal .slides {
+  text-align: left;
+}
+
+.reveal .slide {
+  padding: 20px !important;
+}
