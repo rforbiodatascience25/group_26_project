@@ -1,5 +1,53 @@
 ---
-title: "presentation"
-format: html
+
+title: "Project presentation"
+authors: ""
+date: "2 dec 2025"
+format:
+  revealjs:
+    footer: "Project_group26"
+    slide-number: true
+    #transition: "fade"
+    #title-slide-attributes: 
+     # data-background-image: background.png
 ---
 
+
+## 1) Introduction to the data | Lun
+
+
+## 2) Cleaning the data | Lun
+
+
+
+## 3) Augmenting the data. e.g. standardardized (pr. 100k) vs normal | Henrik
+
+## 4) Analysis 2 - part 3 | Henrik
+(E.g. risk factors)
+
+
+
+## 5) Analysis 2 - part 1 | Bhavya
+(E.g. global cases)
+
+
+
+## 6) Analysis 2 - part 2 | Bhavya
+(E.g. age distribution)
+
+
+
+## 7) Analysis 1 - part 1 | Dhruva
+(World map plots)
+
+
+## 8) Analysis 1 - part 2 | Dhruva
+(Household contacts)
+
+
+## 9) Analysis 1 - part 3 | Felipe
+(linear models for drug resistance and mortality in the countries. Maybe also include the stuff on detection rate). 
+
+
+## 10) Conclusion/ wrapping up | Felipe
+(Heatmaps and PCA for analysis 2)
