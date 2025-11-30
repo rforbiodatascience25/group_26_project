@@ -19,6 +19,13 @@ which countries have the highest TB data gaps?
 
 ------------------------------------------------------------------------
 
+**Note to self - add this in all code chunks when wrapping up:**
+
+```{r}
+#| echo: true
+#| eval: true
+```
+
 **Loading relevant libraries:**
 
 ```{r}
@@ -61,78 +68,142 @@ TB_dictionary
 
 ```
 
-------------------------------------------------------------------------
+**Mutating the country names:**
 
-### Global cases: 
-
-**World map which displays the total TB cases:**
+In this analysis we will plot the data on a world map using "library(maps)", hence we need to change the country names to match the names in the package. We create a map dataset for all the years.
 
 ```{r}
-
-# 1. Get the world map data
+# 1. Load the world map coordinates
 world_map <- map_data("world")
 
-# 2. Prepare your data (Latest year: 2024)
-ltbi_map_data <- ltbi_data |>
-  filter(year == 2024) |>
-  # Fix country names to match library(maps)
-  mutate(country = case_when(
-    country == "United States" ~ "USA",
-    country == "United Kingdom" ~ "UK",
-    country == "Democratic Republic of the Congo" ~ "Democratic Republic of the Congo",
-    country == "Congo" ~ "Republic of Congo",
-    TRUE ~ country
-  ))
-
-# 3. Join your data to the map coordinates
-map_data_joined <- left_join(world_map, ltbi_map_data, by = c("region" = "country"))
-
-# 4. Plot the map using coord_quickmap() instead
-ggplot(map_data_joined, aes(x = long, y = lat, group = group, fill = Preventive_Tx_Pct)) +
-  geom_polygon(color = "white", size = 0.1) +
-  
-  # This replaces coord_map() and does NOT need mapproj
-  coord_quickmap() + 
-  
-  scale_fill_viridis_c(
-    option = "plasma", 
-    name = "Coverage (%)", 
-    na.value = "lightgrey", 
-    direction = -1
-  ) +
-  labs(
-    title = "Global TB Preventive Treatment Coverage (2024)",
-    subtitle = "Map created without mapproj",
-    x = "", y = ""
-  ) +
-  theme_void() +
-  theme(
-    legend.position = "bottom",
-    plot.title = element_text(hjust = 0.5, face = "bold"),
-    plot.subtitle = element_text(hjust = 0.5)
+# 2. Create the main map dataframe
+map_TB_10_years_joined <- world_map |> 
+  left_join(
+    TB_10_years_joined |>
+      # Create a 'region' column that matches the map library names
+      mutate(region = case_when(
+        country == "United States of America"   ~ "USA",
+        country == "Bolivia (Plurinational State of)" ~ "Bolivia",
+        country == "Brunei Darussalam"          ~ "Brunei",
+        country == "Cabo Verde"                 ~ "Cape Verde",
+        country == "China, Hong Kong SAR"       ~ "Hong Kong",
+        country == "China, Macao SAR"           ~ "Macao", 
+        country == "Congo"                      ~ "Republic of Congo",
+        country == "Côte d'Ivoire"              ~ "Ivory Coast",
+        country == "Czechia"                    ~ "Czech Republic",
+        country == "Democratic People's Republic of Korea" ~ "North Korea",
+        country == "Eswatini"                   ~ "Swaziland",
+        country == "Iran (Islamic Republic of)" ~ "Iran",
+        country == "Lao People's Democratic Republic" ~ "Laos",
+        country == "Netherlands (Kingdom of the)" ~ "Netherlands",
+        country == "occupied Palestinian territory, including east Jerusalem" ~ "Palestine",
+        country == "Republic of Korea"          ~ "South Korea",
+        country == "Republic of Moldova"        ~ "Moldova", 
+        country == "Russian Federation"         ~ "Russia",
+        country == "Sint Maarten (Dutch part)"  ~ "Sint Maarten",
+        country == "Syrian Arab Republic"       ~ "Syria",
+        country == "Tokelau"                    ~ "Tokelau",
+        country == "Trinidad and Tobago"        ~ "Trinidad",
+        country == "Türkiye"                    ~ "Turkey",
+        country == "Tuvalu"                     ~ "Tuvalu",
+        country == "United Kingdom of Great Britain and Northern Ireland" ~ "UK",
+        country == "United Republic of Tanzania" ~ "Tanzania",
+        country == "Venezuela (Bolivarian Republic of)" ~ "Venezuela",
+        country == "Viet Nam"                   ~ "Vietnam",
+        TRUE ~ country
+      )),
+    by = "region",
+    relationship = "many-to-many"
   )
 ```
+
+------------------------------------------------------------------------
+
+### Global cases:
 
 **World map of Tuberculosis Preventive Treatment (TPT):**
 
 TPT = treatment which is given to people who have a dormant TB infection, but who are at risk of getting an active TB infection.
 
 ```{r}
-# 1. Load Data
-df <- TB_10_years
 
-# 2. Filter for 2024 Data
-df_2024 <- df |>
+# Filter for 2024
+map_2024 <- map_TB_10_years_joined |>
   filter(year == 2024)
 
-# GLOBAL ANALYSIS (Matching the Text)
+# Plot
+ggplot(map_2024, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = Preventive_Tx_Pct), color = "white", size = 0.05) +
+  
+  # Your Custom Red-to-Green Scale
+  scale_fill_gradientn(
+    colors = c("#A50026", "#D73027", "#F46D43", "#FDAE61", "#FEE08B", 
+               "#FFFFBF", "#D9EF8B", "#A6D96A", "#66BD63", "#1A9850", "#006837"),
+    na.value = "grey90",
+    name = "Coverage (%)",
+    limits = c(0, 100),
+    labels = label_percent(scale = 1)
+  ) +
+  
+  labs(
+    title = "TB Preventive Treatment Coverage (2024)",
+    subtitle = "Percentage of estimated contacts provided with TPT"
+  ) +
+  theme_void() +
+  coord_fixed(1.3) +
+  theme(
+    legend.position = "bottom",
+    legend.key.width = unit(2, "cm"),
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+```
+
+```{r}
+# 1. Filter the data (2016 to 2024)
+map_filtered <- map_TB_10_years_joined |>
+  filter(year >= 2016 & year <= 2024)
+
+# 2. Plot the Grid
+ggplot(map_filtered, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = Preventive_Tx_Pct), color = "white", size = 0.05) +
+  
+  # Red-to-Green Color Scale
+  scale_fill_gradientn(
+    colors = c("#A50026", "#D73027", "#F46D43", "#FDAE61", "#FEE08B", 
+               "#FFFFBF", "#D9EF8B", "#A6D96A", "#66BD63", "#1A9850", "#006837"),
+    na.value = "grey90",
+    name = "Coverage (%)",
+    limits = c(0, 100),
+    labels = label_percent(scale = 1)
+  ) +
+  
+  # Grid Layout
+  facet_wrap(~year, ncol = 3) + 
+  
+  labs(
+    title = "Evolution of TB Preventive Treatment Coverage (2016-2024)",
+  ) +
+  theme_void() +
+  coord_fixed(1.3) +
+  theme(
+    legend.position = "bottom",
+    legend.key.width = unit(2.5, "cm"),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 16),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    strip.text = element_text(face = "bold", size = 12)
+  )
+```
+
+```{r}
+# Global analysis (2024)
 
 analysis_2024 <- df_2024 |>
   summarise(
-    # 1. Estimated Household Contacts (Matches "14 million")
+    # 1. Estimated Household Contacts
     Global_Estimated_Contacts = sum(Contacts_best, na.rm = TRUE),
     
-    # 2. People Provided TPT (Matches "3.5 million")
+    # 2. People Provided TPT
     # Calculated as Estimated * Coverage %
     Global_TPT_Total = sum(Contacts_best * (Preventive_Tx_Pct / 100), na.rm = TRUE),
     
@@ -144,84 +215,24 @@ analysis_2024 <- df_2024 |>
     Global_Coverage_Pct = (Global_TPT_Total / Global_Estimated_Contacts) * 100
   )
 
-print(" GLOBAL TB PREVENTIVE TREATMENT HIGHLIGHTS (2024)")
 print(analysis_2024)
-
-# Prepare Map Data
-world_map <- map_data("world") |>
-  rename(country = region) |>
-  # Fix common country name mismatches to improve data joining
-  mutate(country = case_when(
-    country == "USA" ~ "United States of America",
-    country == "UK" ~ "United Kingdom",
-    country == "Democratic Republic of the Congo" ~ "Democratic Republic of the Congo",
-    country == "Republic of Congo" ~ "Congo",
-    TRUE ~ country
-  ))
-
-# Join Data with Map
-map_data_joined <- left_join(world_map, df_2024, by = "country")
-
-# Plot
-p_map <- ggplot(map_data_joined, aes(x = long, y = lat, group = group)) +
-  geom_polygon(aes(fill = Preventive_Tx_Pct), color = "white", size = 0.1) +
-  scale_fill_gradientn(
-    colors = c(
-    "#A50026", "#D73027", "#F46D43", "#FDAE61", "#FEE08B", 
-    "#FFFFBF", 
-    "#D9EF8B", "#A6D96A", "#66BD63", "#1A9850", "#006837"
-  ),
-    na.value = "grey90",
-    name = "Coverage (%)",
-    limits = c(0, 100),
-    labels = label_percent(scale = 1)
-  ) +
-  labs(
-    title = "Tuberculosis preventive treatment coverage\namong estimated household contacts (2024)",
-    subtitle = "Percentage of estimated contacts provided with TB preventive treatment",
-  ) +
-  theme_void() +
-  theme(
-    legend.position = "bottom",
-    legend.key.width = unit(2, "cm"),
-    plot.title = element_text(face = "bold", hjust = 0.5),
-    plot.subtitle = element_text(hjust = 0.5)
-  ) +
-  coord_fixed(1.3)
-
-print(p_map)
 ```
 
 **World map of TB cases pr. 100k citizens:**
 
 ```{r}
-# 1. Load Data
-df <- TB_10_years
 
-# Map of TB Incidence Rates (2024)
-# "Estimated new cases per 100,000 population"
+# Filter for 2024
+map_2024 <- map_TB_10_years_joined |>
+  filter(year == 2024)
 
-df_2024 <- df |> filter(year == 2024)
-
-world_map <- map_data("world") |>
-  rename(country = region) |>
-  mutate(country = case_when(
-    country == "USA" ~ "United States of America",
-    country == "UK" ~ "United Kingdom",
-    country == "Democratic Republic of the Congo" ~ "Democratic Republic of the Congo",
-    country == "Republic of Congo" ~ "Congo",
-    TRUE ~ country
-  ))
-
-map_data_joined <- left_join(world_map, df_2024, by = "country")
-
-p_map_inc <- ggplot(map_data_joined, aes(x = long, y = lat, group = group)) +
+# Plot
+ggplot(map_data_joined, aes(x = long, y = lat, group = group)) +
   geom_polygon(aes(fill = e_inc_100k), color = "white", size = 0.1) +
   # Using 'viridis' option 'inferno' or 'magma' for high contrast
   scale_fill_viridis_c(
     option = "magma", 
     direction = -1, # Darker colors for higher incidence
-    trans = "log10", # Log scale helps visualize differences better
     name = "Incidence\n(per 100k)",
     na.value = "grey90"
   ) +
@@ -233,14 +244,47 @@ p_map_inc <- ggplot(map_data_joined, aes(x = long, y = lat, group = group)) +
   theme(legend.position = "bottom", legend.key.width = unit(2, "cm")) +
   coord_fixed(1.3)
 
-print(p_map_inc)
+```
+
+```{r}
+# 1. Filter the data (2016 to 2024)
+map_filtered <- map_TB_10_years_joined |>
+  filter(year >= 2016 & year <= 2024)
+
+# 2. Plot the Grid
+ggplot(map_filtered, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = e_inc_100k), color = "white", size = 0.05) +
+  
+  # Red-to-Green Color Scale
+  scale_fill_viridis_c(
+    option = "magma", 
+    direction = -1, # Darker colors for higher incidence
+    name = "Incidence\n(per 100k)",
+    na.value = "grey90"
+  ) +
+  
+  # Grid Layout
+  facet_wrap(~year, ncol = 3) + 
+  
+  labs(
+    title = "Evolution of TB Preventive Treatment Coverage (2016-2024)",
+  ) +
+  theme_void() +
+  coord_fixed(1.3) +
+  theme(
+    legend.position = "bottom",
+    legend.key.width = unit(2.5, "cm"),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 16),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    strip.text = element_text(face = "bold", size = 12)
+  )
 ```
 
 **Bar chart - Total amount of people provided with TB Preventive Treatment (TPT):**
 
 ```{r}
 # 1. Load Data
-df <- TB_10_years
+df <- TB_10_years_joined
 
 # 2. Data Processing
 # We need to calculate the absolute numbers from the percentages and denominators.
@@ -353,7 +397,7 @@ p <- ggplot(global_trends, aes(x = year)) +
 print(p)
 ```
 
-Children under 5 years of age are a priority group for WHO’s TB preventive treatment (TPT), because they are at significantly higher risk of rapid progression from TB infection to active disease and often develop more severe forms of TB.
+Children under 5 years of age are a priority group for TB preventive treatment (TPT), because they are at significantly higher risk of rapid progression from TB infection to active disease and often develop more severe forms of TB.
 
 Therefore, this helps explain why we see more kids having received TPT.
 
@@ -499,47 +543,12 @@ Meanwhile, Eastern Mediterranean Region worst control of the mortality relative 
 ### **Household insights:**
 
 ```{r}
-contacts_best <- TB_10_years_joined |>
-  filter(year == 2024) |>  # Keep data for 2015 and for both sex
-  select(country, Contacts_best) |>                      # Select the two columns of interest
-  rename(region = country, contacts = Contacts_best) |>  # Rename columns
-  # Replace "United States of America" by USA in the region column
-  mutate(region = case_when(
-                            region == "United States of America"   ~ "USA",
-                            region == "Bolivia (Plurinational State of)" ~ "Bolivia",
-                            region == "Brunei Darussalam" ~ "Brunei",
-                            region == "Cabo Verde" ~ "Cape Verde",
-                            region == "China, Hong Kong SAR" ~ "Hong Kong",
-                            region == "China, Macao SAR" ~ "Macao", 
-                            region == "Congo" ~ "Republic of Congo",
-                            region == "Côte d'Ivoire" ~ "Ivory Coast",
-                            region == "Czechia" ~ "Czech Republic",
-                            region == "Democratic People's Republic of Korea" ~ "North Korea",
-                            region == "Eswatini" ~ "Swaziland",
-                            region == "Iran (Islamic Republic of)" ~ "Iran",
-                            region == "Lao People's Democratic Republic" ~ "Laos",
-                            region == "Netherlands (Kingdom of the)" ~ "Netherlands",
-                            region == "occupied Palestinian territory, including east Jerusalem" ~ "Palestine",
-                            region == "Republic of Korea" ~ "South Korea",
-                            region == "Republic of Moldova" ~ "Moldova", 
-                            region == "Russian Federation" ~ "Russia",
-                            region == "Sint Maarten (Dutch part)" ~ "Sint Maarten",
-                            region == "Syrian Arab Republic" ~ "Syria",
-                            region == "Tokelau" ~ "Tokelau",
-                            region == "Trinidad and Tobago" ~ "Trinidad",
-                            region == "Türkiye" ~ "Turkey",
-                            region == "Tuvalu" ~ "Tuvalu",
-                            region == "United Kingdom of Great Britain and Northern Ireland" ~ "UK",
-                            region == "United Republic of Tanzania" ~ "Tanzania",
-                            region == "Venezuela (Bolivarian Republic of)" ~ "Venezuela",
-                            region == "Viet Nam" ~ "Vietnam",
-                            TRUE   ~ region
-))
-world_map <- map_data("world")
-contacts_best_map <- left_join(contacts_best, world_map, by = "region")
+# Filter for 2024
+map_2024 <- map_TB_10_years_joined |>
+  filter(year == 2024)
 
-ggplot(contacts_best_map, aes(long, lat, group = group))+
-  geom_polygon(aes(fill = contacts ), color = "white", size = 0.1) +
+ggplot(map_2024, aes(long, lat, group = group))+
+  geom_polygon(aes(fill = Contacts_best ), color = "white", size = 0.1) +
   coord_quickmap() + 
   scale_fill_viridis_c(option = "C") +
   labs(
@@ -556,6 +565,41 @@ ggplot(contacts_best_map, aes(long, lat, group = group))+
 ```
 
 The map shows how India is the country with most TB contacts during 2024, which is perhaps not too surprising, given that it is an overcrowded country.
+
+```{r}
+# 1. Filter data for the grid (2016-2024)
+map_contacts_grid <- map_TB_10_years_joined |>
+  filter(year >= 2016 & year <= 2024)
+
+# 2. Plot the Grid
+ggplot(map_contacts_grid, aes(long, lat, group = group)) +
+  
+  geom_polygon(aes(fill = Contacts_best), color = "white", size = 0.05) +
+  
+  coord_quickmap() +
+  
+  scale_fill_viridis_c(option = "C") +
+  
+  # Create the Grid
+  facet_wrap(~year, ncol = 3) +
+  
+  labs(
+    title = "Household TB Contacts by Country (2016-2024)",
+    subtitle = "Logarithmic Scale: Brighter colors indicate higher number of contacts",
+    x = "", 
+    y = ""
+  ) +
+  
+  theme_void() +
+  
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    legend.position = "bottom",
+    legend.key.width = unit(2.5, "cm"),
+    strip.text = element_text(face = "bold", size = 12) # Makes the year labels readable
+  )
+```
 
 Another hypothesis to prove was that if the amount of detection could contribute to lower the amount of household contacts:
 
