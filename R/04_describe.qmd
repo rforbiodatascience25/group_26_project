@@ -80,9 +80,9 @@ slice_sample(TB_dictionary, n=5)
 
 ------------------------------------------------------------------------
 
-# Data description: 
+# Data description:
 
-### **\*TB_age_sex_joined (2024) - Description:** 
+### **\*TB_age_sex_joined (2024) - Description:**
 
 This dataset contains the number of TB cases across different countries, categorized by age group and gender. It also includes cases per 100,000 population, enabling standardized and comparable analysis between countries.
 
@@ -98,7 +98,7 @@ We can briefly explore the big differences between comparing countries based on 
 ```{r}
 
 #Getting the 10 countries with highest total amount of TB cases:  
-top_10_countries <- TB_age_sex |>
+top_10_countries <- TB_age_sex_joined |>
   group_by(country) |>
   summarise(total_TB = first(total_TB_cases_best)) |>
   arrange(desc(total_TB)) |>
@@ -106,7 +106,7 @@ top_10_countries <- TB_age_sex |>
   pull(country)
 
 #Making a tibble for those countries, and plotting them: 
-TB_age_sex |>
+TB_age_sex_joined |>
   filter(country %in% top_10_countries) |>
   group_by(country) |>
   summarise(
@@ -139,7 +139,7 @@ This will make sense once you glance at the following plot.
 
 ```{r}
 #Making an object for storing the top 10 countries with most TB cases: 
-top_10_countries_100k <- TB_age_sex |>
+top_10_countries_100k <- TB_age_sex_joined |>
   group_by(country) |>
   summarise(
     total_TB_cases_pr_100k_best = first(total_TB_cases_pr_100k_best),
@@ -152,7 +152,7 @@ top_10_countries_100k <- TB_age_sex |>
   pull(country)
 
 #Making a tibble for those countries, and plotting them: 
-TB_age_sex |>
+TB_age_sex_joined |>
   filter(country %in% top_10_countries_100k) |>
   group_by(country) |>
   summarise(
@@ -182,7 +182,7 @@ Except for the Philippines, none of these countries were part of the plot for th
 
 It goes to show that the standardized TB cases pr. 100k of citizens might be a better measure for TB disease intensity of a country.
 
-### **\*TB_10_years_joined (2015-2024) - Description:** 
+### **\*TB_10_years_joined (2015-2024) - Description:**
 
 We combined three WHO datasets — TB burden estimates, MDR/RR-TB burden estimates, and TB infection in household contacts — into a single multi-country, multi-year panel covering approximately 10 years.
 
