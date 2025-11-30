@@ -198,7 +198,7 @@ ggplot(map_filtered, aes(x = long, y = lat, group = group)) +
 ```{r}
 # Global analysis (2024)
 analysis_2024 <- TB_10_years_joined |>
-  filter(year = 2024) |>
+  filter(year == 2024) |>
   summarise(
     # 1. Estimated Household Contacts
     Global_Estimated_Contacts = sum(Contacts_best, na.rm = TRUE),
