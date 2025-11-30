@@ -11,7 +11,7 @@ This script is cleaned and slightly more refined version of the "**TB_age_sex.qm
 
 If you want an even deeper insight into some of the more exploratory and experimental stuff (e.g. testing out a BUNCH of plots), we recommend checking out that script - even tho it is slightly outdated and a bit more messy.
 
-# **Loading libraries:** 
+# **Loading libraries:**
 
 ```{r}
 library(tidyverse) #The main package of the course. Allows us to load nifty table-like structures. A bit similar to Pandas from Python.
@@ -69,7 +69,7 @@ TB_age_sex |>
 
 885.2839 \| (885 out of every 100,000 person has TB)
 
-### **Initiating objects containing valuable information - top 10 countries:** 
+### **Initiating objects containing valuable information - top 10 countries:**
 
 **The countries with the top 10 most *TB cases in total*:**
 
@@ -226,7 +226,7 @@ It appears odd that the "both" group deviates so much from both the male and fem
 
 It might be due to a difference in how the "both" group data was gathered and subsequently used to estimate for.
 
-### **Scatter plot - Sex distribution of the TB case intervals (pr. 100k)** for each of the top 10 most TB burdened countries (pr. 100k): 
+### **Scatter plot - Sex distribution of the TB case intervals (pr. 100k)** for each of the top 10 most TB burdened countries (pr. 100k):
 
 ```{r}
 #Scatter plot for TB cases for different sexes 
@@ -262,7 +262,7 @@ This might be attributable to the likely difference between the data where they 
 
 This could e.g. be due to reasons like maybe the sex-unspecific surveys TB inspections where able to detect more TB patients.
 
-### Bar chart - Age group distribution: 
+### Bar chart - Age group distribution:
 
 Quick look at the different age groups:
 
@@ -436,7 +436,7 @@ The overall trends don't really change compared to the plot for the global TB in
 
 (Although the error bars provide some quite wacky intervals).
 
-### **Bar chart - TB cases relative to risk factors:** 
+### **Bar chart - TB cases relative to risk factors:**
 
 We are again working with the countries.
 
@@ -538,7 +538,7 @@ Let's have a better look at only the risk factor groups.
 **Bar charts - Only the risk factor group:**
 
 ```{r}
-TB_age_sex |>
+plot <- TB_age_sex |>
   filter(country %in% top_10_countries_100k) |>
   group_by(country, risk_factor) |>
   filter(risk_factor != "no risk factor") |>
@@ -566,6 +566,20 @@ TB_age_sex |>
   
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 55, hjust = 1))
+
+
+###
+#Save it
+
+ggsave(
+  filename = "../results/06_1_riskfactor_barchart.png",   #Choose the folder + filename
+  plot = plot,
+  width = 8,       # inches
+  height = 5,      # inches
+  dpi = 300        # high quality
+)
+
+plot
 ```
 
 HIV seems to be a reasonably high risk factor in some of the top 10 most TB burdened countries (pr. 100k).
@@ -577,7 +591,7 @@ Let's verify with a box plot for the whole world population.
 ### Box plot - Global risk factor distribution:
 
 ```{r}
-TB_age_sex |>
+plot <- TB_age_sex |>
   group_by(country, risk_factor) |>
   filter(risk_factor != "no risk factor") |> #Note: If you comment this line, then you will be able to view the "no risk factor" boxplot as well. But it skews the plot a bit. 
   summarise(
@@ -602,6 +616,18 @@ TB_age_sex |>
     title = "Risk factor-divided amount of TB cases pr. 100k citizens"
   )
 
+###
+#Save it
+
+ggsave(
+  filename = "../results/06_2_riskfactor_boxplot.png",   #Choose the folder + filename
+  plot = plot,
+  width = 8,       # inches
+  height = 5,      # inches
+  dpi = 300        # high quality
+)
+
+plot
 ```
 
 As we also observed on the bar chart from before, there is not really any notable difference between the distribution of TB risk factor cases.
@@ -646,7 +672,7 @@ TB_age_sex |>
 **Heatmap - age relative to risk factor:**
 
 ```{r}
-TB_age_sex |>
+plot <- TB_age_sex |>
   ggplot(aes(x = age_group, y = risk_factor, fill = TB_cases_pr_100k_best)) +
   geom_tile() +
   scale_fill_viridis_c() +
@@ -660,6 +686,19 @@ TB_age_sex |>
   theme(
     axis.text.x = element_text(angle = 55, hjust = 1)
   )
+
+###
+#Save it
+
+ggsave(
+  filename = "../results/06_3_heatmap_riskfactors.png",   #Choose the folder + filename
+  plot = plot,
+  width = 8,       # inches
+  height = 5,      # inches
+  dpi = 300        # high quality
+)
+
+plot
 ```
 
 Note: Transparent fields are **NA values**.
@@ -717,7 +756,7 @@ TB_age_sex |>
 
 This matches pretty well what we previously observed on the bar charts, before we started filtering away some of the inconsistent age groups.
 
-### PCA biplot: 
+### PCA biplot:
 
 ```{r}
 #2d PCA biplot for the top 10 most TB burdened countries (pr. 100k)
@@ -836,6 +875,6 @@ We note that countries like Myanmar, Djibouti and Timor-Leste is associated with
 
 However, any conclusions which can be drawn from this PCA biplot might be incorrect due to the missing data - i.e. what we saw in the heat map.
 
-E.g. since the 'undernourishment' label is only present in data which only has 'age=all' (goes into the 'mixed age' group), then this will prevent us from intepreting anything on a broader level.
+E.g. since the 'undernourishment' label is only present in data which only has 'age=all' (goes into the 'mixed age' group), then this will prevent us from interpreting anything on a broader level.
 
 Although if compare with out bar chart from earlier of the different risk factors, we can observe that Myanmar, Djibouti and Timor-Leste have the most undernourishment + TB cases, relative to the other risk factor labels in that country.

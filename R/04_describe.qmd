@@ -106,7 +106,7 @@ top_10_countries <- TB_age_sex_joined |>
   pull(country)
 
 #Making a tibble for those countries, and plotting them: 
-TB_age_sex_joined |>
+plot <- TB_age_sex_joined |>
   filter(country %in% top_10_countries) |>
   group_by(country) |>
   summarise(
@@ -127,6 +127,20 @@ TB_age_sex_joined |>
     title = "Top 10 Countries - Total TB cases, with error bars"
   ) +
   theme_minimal()
+
+
+###
+#Save it
+
+ggsave(
+  filename = "../results/04_1_top10_TB.png",   #Choose the folder + filename
+  plot = plot,
+  width = 8,       # inches
+  height = 5,      # inches
+  dpi = 300        # high quality
+)
+
+plot
 ```
 
 Note that really large countries like China and India is part of this graph.
@@ -152,7 +166,7 @@ top_10_countries_100k <- TB_age_sex_joined |>
   pull(country)
 
 #Making a tibble for those countries, and plotting them: 
-TB_age_sex_joined |>
+plot <- TB_age_sex_joined |>
   filter(country %in% top_10_countries_100k) |>
   group_by(country) |>
   summarise(
@@ -174,6 +188,19 @@ TB_age_sex_joined |>
   ) +
   theme_minimal()
 
+
+###
+#Save it
+
+ggsave(
+  filename = "../results/04_2_top10_TB_100k.png",   #Choose the folder + filename
+  plot = plot,
+  width = 8,       # inches
+  height = 5,      # inches
+  dpi = 300        # high quality
+)
+
+plot
 ```
 
 Would you look at that!
