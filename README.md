@@ -1,3 +1,15 @@
+Contributers:
+
+s252641 : vestigialairbender
+
+s225191: dhruva-225191
+
+s215065 : Henrikk17
+
+s253705 : lundrought
+
+s252623 : FelipeMoralesG
+
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 Welcome to **group 26's project repo**!
