@@ -159,9 +159,7 @@ TB_age_sex |>
 
 ------------------------------------------------------------------------
 
-**5) Analysis 2 - 2024 Dataset - TB age and sex distribution**
-
-(E.g. global cases)
+**5) Analysis 2 - 2024 Dataset - TB sex distribution**
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -186,12 +184,12 @@ TB_age_sex |>
     title = "Sex-divided amount of TB cases pr. 100k citizens\nOnly for the 10 countries with highest TB cases pr. 100k"
   )
 ```
+**Box Plot - TB sex distribution averaged for top 10 most burdened countries:**
 
 ![](../results/images/06_3_sexdistribution_boxplot.png){width="2000"}
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
-Sex distribution in most burdened countries with TB
 
 ```{r 5_2, echo=TRUE, eval=FALSE}
 TB_age_sex |>
@@ -216,17 +214,67 @@ TB_age_sex |>
     theme_minimal()
 ```
 
-**Scatter plot of TB cases by sex in most burdened countries:**
+**Scatter plot of TB cases by sex in each top 10 country:**
 
-![](../results/images/06_3_sexdistribution_boxplot.png){width="2000"} ##Bhavya erase this, and change the image
+![](../results/images/06_sexdistribution_scatterplot.png){width="2000"} 
 :::
 :::::
 
 ------------------------------------------------------------------------
 
-**6) Analysis 2 - part 2**
+**6) Analysis 2 - 2024 Dataset - TB age distribution**
 
-(E.g. age distribution)
+::::: columns
+::: {.column width="50%" style="font-size: 0.9em"}
+```{r 6_1, echo=TRUE, eval=FALSE}
+TB_age_sex |>
+  group_by(age_group) |>
+  summarise(
+    TB_best = sum(TB_cases_best), #Summing the amount of total TB cases for this group
+    TB_min = sum(TB_cases_min),
+    TB_max = sum(TB_cases_max),
+     ) |>
+ 
+   mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower) #This part helps order the age group intervals correctly. 
+  ) |>
+ 
+  #Removing undesirable age groups.
+  filter(!age_group %in% c("15+", "18+", "all", "0-14")) |> 
+  
+#...followed by ggplot
+  
+```
+**Box Plot - Worldwide, TB per. 100k - age distribution:**
+
+![](../results/images/06_age_distribution.png){width="2000"}
+:::
+::: {.column width="50%" style="font-size: 0.9em"}
+
+```{r 6_2, echo=TRUE, eval=FALSE}
+TB_age_sex |>
+  group_by(age_group) |>
+  filter(country %in% top_10_countries_100k) |> #<-- New change
+  summarise(
+    TB_best = sum(TB_cases_best), #Summing the amount of total TB cases for this group
+    TB_min = sum(TB_cases_min),
+    TB_max = sum(TB_cases_max),
+    
+  ) |>
+  mutate(
+    age_lower = as.numeric(str_extract(age_group, "^[0-9]+")),
+    age_lower = ifelse(is.na(age_lower), Inf, age_lower) #This part helps order the age group intervals correctly. 
+  ) |>
+  filter(!age_group %in% c("15+", "18+", "all", "0-14")) |> #<--- New change! #Removing undesirable age groups.
+  #...followed by ggplot
+```
+
+**Box plot for top 10 most TB infected countries, total TB cases - with age groups**
+
+![](../results/images/06_age_distribution_burden.png){width="2000"} 
+:::
+:::::
 
 ------------------------------------------------------------------------
 
@@ -238,7 +286,7 @@ TB_age_sex |>
 geom_polygon(aes(fill = e_inc_100k)
 ```
 
-![](../results/images/05_evolution_tb_incidence.png){width="1500"}
+![](images/05_evolution_tb_incidence.png){width="1500"}
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -246,7 +294,7 @@ geom_polygon(aes(fill = e_inc_100k)
 geom_polygon(aes(fill = Preventive_Tx_Pct)
 ```
 
-![](../results/images/05_evolution_TPT.png){width="1500"}
+![](images/05_evolution_TPT.png){width="1500"}
 :::
 :::::
 
