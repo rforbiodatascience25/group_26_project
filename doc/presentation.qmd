@@ -259,7 +259,7 @@ TB_age_sex |>
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
-
+**Scatter plot with linear regresion per country:**
 
 ```{r 9_1, echo=TRUE, eval=FALSE}
 TB_10_years_joined |>
@@ -282,7 +282,7 @@ TB_10_years_joined |>
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
-
+**Box plots of mortality percentages based on different combinations of TB and HIV:**
 
 ```{r 9_2, echo=TRUE, eval=FALSE}
 TB_10_years_joined |>
