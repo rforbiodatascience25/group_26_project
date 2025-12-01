@@ -286,7 +286,7 @@ TB_10_years_joined |>
 ::: {.column width="50%" style="font-size: 0.9em"}
 
 
-```{r 5_2, echo=TRUE, eval=FALSE}
+```{r 9_2, echo=TRUE, eval=FALSE}
 TB_10_years_joined |>
 mutate(
 disease = case_when(
