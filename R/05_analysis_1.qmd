@@ -237,7 +237,7 @@ ggplot(map_2024, aes(x = long, y = lat, group = group)) +
     na.value = "grey90"
   ) +
   labs(
-    title = "Global TB Incidence Rates (2024)",
+    title = "Global TB Incidence (per 100K) (2024)",
   ) +
   theme_void() +
   theme(legend.position = "bottom", legend.key.width = unit(2, "cm")) +
@@ -266,7 +266,7 @@ ggplot(map_filtered, aes(x = long, y = lat, group = group)) +
   facet_wrap(~year, ncol = 3) + 
   
   labs(
-    title = "Evolution of TB Preventive Treatment Coverage (2016-2024)",
+    title = "Evolution of TB Incidence (per 100K) (2016-2024)",
   ) +
   theme_void() +
   coord_fixed(1.3) +
