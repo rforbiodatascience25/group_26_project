@@ -1,6 +1,8 @@
 ---
 title: "03_augment"
-format: html
+format:
+  html:
+    self-contained: true
 ---
 
 WHO 2025 data on Tuberculosis.
@@ -43,7 +45,7 @@ source("99_proj_func.R")
 ```{r}
 #Loading age and sex and risk group data (2024 only): 
 
-data_file   <- "TB_age_sex.tsv"
+data_file   <- "02_clean_TB_age_sex.tsv"
 TB_age_sex  <- load_data(data_file)
 
 #Display the data: 
@@ -56,7 +58,7 @@ slice_sample(TB_age_sex, n=5)
 ```{r}
 #Loading TB burden estimates: 
 
-data_file   <- "TB_burden.tsv"
+data_file   <- "02_clean_TB_burden.tsv"
 TB_burden   <- load_data(data_file)
 
 #Display the data: 
@@ -68,7 +70,7 @@ slice_sample(TB_burden, n=5)
 ```{r}
 #Loading MDR/RR-TB burden estimates
 
-data_file     <- "MDR_RR_burden_estimates.tsv"
+data_file     <- "02_clean_MDR_RR_burden_estimates.tsv"
 mdr_rr_data   <- load_data(data_file)
 
 #Display the data_
@@ -80,7 +82,7 @@ slice_sample(mdr_rr_data, n=5)
 ```{r}
 #Loading LTBI estimates (Household contacts) data:
 
-data_file   <- "LTBI_estimates.tsv"
+data_file   <- "02_clean_LTBI_estimates.tsv"
 ltbi_data   <- load_data(data_file)
 
 #Display the data: 
@@ -179,7 +181,7 @@ No NA values - that is great.
 **Save joined and augmented data:**
 
 ```{r}
-save_data(TB_age_sex, "TB_age_sex_joined.tsv")
+save_data(TB_age_sex, "03_aug_TB_age_sex.tsv")
 ```
 
 ------------------------------------------------------------------------
@@ -216,5 +218,5 @@ As we can see, there are many NA values, which is expected because not all count
 **Save the joined data for 2015-2024:**
 
 ```{r}
-save_data(TB_10_years, "TB_10_years_joined.tsv")
+save_data(TB_10_years, "03_aug_TB_10_years.tsv")
 ```
