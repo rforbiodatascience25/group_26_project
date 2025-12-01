@@ -360,6 +360,11 @@ labs(
 
 ------------------------------------------------------------------------
 
-**10) Conclusion/ wrapping up**
+## Conclusions {.big-text}
 
-(Heatmaps and PCA for analysis 2)
+:::{.large}
+- Using R in combination with Tidyverse allows effective data extraction, cleaning, augmentation, and analysis of the WHO TB dataset.
+- The analysis successfully replicated key WHO findings and additionally provided insights into  trends in TB burden, RR-TB and TB/HIV infection.
+- R combined with Tidyverse offers a powerful tool to explore large biological datasets and to generate reproducible analyses.
+- These tools facilitate answering complicated biological questions by allowing an efficient extraction, transformation, and visualization of big datasets.
+:::
