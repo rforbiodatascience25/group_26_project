@@ -151,7 +151,9 @@ TB_age_sex |>
   ) #... followed by ggplot
 ```
 
-**Box plot of TB + risk factor cases, globally:** ![](images/06_2_riskfactor_boxplot.png){width="2000"}
+**Box plot of TB + risk factor cases, globally:** 
+
+![](images/06_2_riskfactor_boxplot.png){width="2000"}
 :::
 :::::
 
@@ -236,7 +238,7 @@ TB_age_sex |>
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
-```{r 5_1, echo=TRUE, eval=FALSE}
+```{r 7_1, echo=TRUE, eval=FALSE}
 geom_polygon(aes(fill = e_inc_100k)
 ```
 
@@ -244,7 +246,7 @@ geom_polygon(aes(fill = e_inc_100k)
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
-```{r 5_1, echo=TRUE, eval=FALSE}
+```{r 7_2, echo=TRUE, eval=FALSE}
 geom_polygon(aes(fill = Preventive_Tx_Pct)
 ```
 
@@ -258,7 +260,7 @@ geom_polygon(aes(fill = Preventive_Tx_Pct)
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
-```{r 5_1, echo=TRUE, eval=FALSE}
+```{r 8_1, echo=TRUE, eval=FALSE}
 
 gap_analysis <- TB_10_years_joined |>
   filter(year == 2024) |>
@@ -285,7 +287,7 @@ gap_analysis <- gap_analysis |>
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
-```{r 5_1, echo=TRUE, eval=FALSE}
+```{r 8_2, echo=TRUE, eval=FALSE}
 
 df_clean <- df |>
   mutate(TPT_Contacts_Num = Contacts_best * Preventive_Tx_Pct / 100)
@@ -314,8 +316,6 @@ global_trends <- df_clean |>
 
 **Scatter plot with linear regresion per country:**
 
-=======
->>>>>>> c3d48449df7a62b1791574862e33c8337c3fbfd5
 ```{r 9_1, echo=TRUE, eval=FALSE}
 TB_10_years_joined |>
   ggplot(aes(x=(rr_incidence/e_pop_num*10^5),y=e_mort_100k, color=g_whoregion.x)) +
@@ -340,8 +340,6 @@ TB_10_years_joined |>
 
 **Box plots of mortality percentages based on different combinations of TB and HIV:**
 
-=======
->>>>>>> c3d48449df7a62b1791574862e33c8337c3fbfd5
 ```{r 9_2, echo=TRUE, eval=FALSE}
 TB_10_years_joined |>
 mutate(
