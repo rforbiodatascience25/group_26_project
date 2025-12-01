@@ -203,15 +203,35 @@ TB_age_sex |>
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
-test
-
-```{r test2, echo=TRUE, eval=FALSE}
-#test
+Sex distribution in most burdened countries with TB
+```{r 5_2, echo=TRUE, eval=FALSE}
+TB_age_sex |>
+  group_by(country, sex) |>
+  summarise( #getting the summed TB case values for each country and sex.
+    TB_best_100k = sum(TB_cases_best)/first(population_size)*10^5, #Use first(),
+    # as the same value is repeated on several rows, for each country. 
+    TB_min_100k = sum(TB_cases_min)/first(population_size)*10^5,
+    TB_max_100k = sum(TB_cases_max)/first(population_size)*10^5,
+  ) |>
+  filter(country %in% top_10_countries_100k) |>
+  ggplot(aes(x = TB_best_100k, y = country, color = sex)) +
+    geom_point(position = position_dodge(width = 0.5), size = 3) +
+    geom_errorbarh(
+      aes(xmin = TB_min_100k, xmax = TB_max_100k),
+      position = position_dodge(width = 0.5),
+      height = 0.4
+    ) +
+    labs(
+      x = "TB cases per 100k\n(Best estimate with min/max)",
+      y = "Country",
+      title = "TB cases pr. 100k by sex\n(Countries with top 10 most TB cases pr. 100k)"
+    ) +
+    theme_minimal()
 ```
 
-Another test image:
+**Scatter plot of TB cases by sex in most burdened countries:**
 
-![](placeholder_image.png)
+![](images/06_sexdistribution_scatterplot.png){width="2000"}
 :::
 :::::
 
