@@ -151,7 +151,7 @@ TB_age_sex |>
   ) #... followed by ggplot
 ```
 
-**Box plot of TB + risk factor cases, globally:** 
+**Box plot of TB + risk factor cases, globally:**
 
 ![](../results/images/06_2_riskfactor_boxplot.png){width="2000"}
 :::
@@ -191,7 +191,6 @@ TB_age_sex |>
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
-
 Sex distribution in most burdened countries with TB
 
 ```{r 5_2, echo=TRUE, eval=FALSE}
@@ -219,9 +218,7 @@ TB_age_sex |>
 
 **Scatter plot of TB cases by sex in most burdened countries:**
 
-![](../results/images/06_3_sexdistribution_boxplot.png){width="2000"}
-##Bhavya erase this, and change the image
-
+![](../results/images/06_3_sexdistribution_boxplot.png){width="2000"} ##Bhavya erase this, and change the image
 :::
 :::::
 
@@ -234,7 +231,6 @@ TB_age_sex |>
 ------------------------------------------------------------------------
 
 **7) Analysis 1 - part 1**
-
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -283,7 +279,6 @@ gap_analysis <- gap_analysis |>
 ```
 
 ![](../results/images/05_burden_treatment.png){width="600"}
-
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -313,7 +308,6 @@ global_trends <- df_clean |>
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
-
 **Scatter plot with linear regresion per country:**
 
 ```{r 9_1, echo=TRUE, eval=FALSE}
@@ -337,7 +331,6 @@ TB_10_years_joined |>
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
-
 **Box plots of mortality percentages based on different combinations of TB and HIV:**
 
 ```{r 9_2, echo=TRUE, eval=FALSE}
