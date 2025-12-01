@@ -448,7 +448,7 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <span id="cb2-2"><a href=""></a>TB_10_years <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(TB_burden, mdr_rr_data, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"country"</span>, <span class="st">"year"</span>))</span>
 <span id="cb2-3"><a href=""></a>TB_10_years <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(TB_10_years, ltbi_data, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"country"</span>, <span class="st">"year"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><img data-src="../results/04_1_top10_TB.png" width="2000"></p>
+<p><img data-src="images/04_1_top10_TB.png" width="2000"></p>
 </div><div class="column" style="font-size: 0.9em">
 <p>The datasets contain TB cases for a given country. However, having a large population size (India and China), will also cause the overall TB cases to be larger for such countries.</p>
 <p><strong>Solution:</strong> Standardize the data! (I.e. amount of people with TB out of every pr. 100,000 citizen).</p>
@@ -470,7 +470,7 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <span id="cb3-15"><a href=""></a>        <span class="at">TB_cases_pr_100k_max =</span> TB_cases_max<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
 <span id="cb3-16"><a href=""></a>        )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><img data-src="../results/04_2_top10_TB_100k.png" width="2000"></p>
+<p><img data-src="images/04_2_top10_TB_100k.png" width="2000"></p>
 </div></div>
 </section>
 <section class="slide level2">
@@ -496,7 +496,7 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <span id="cb4-14"><a href=""></a>  ) <span class="co">#... followed by ggplot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><strong>Bar chart of the risk factor distribution:</strong> <strong>(Without the ‘no risk factor’ label)</strong></p>
-<p><img data-src="../results/06_1_riskfactor_barchart.png" width="2000"></p>
+<p><img data-src="images/06_1_riskfactor_barchart.png" width="2000"></p>
 </div><div class="column" style="font-size: 0.9em">
 <p><strong>Box plots of the global risk factor distribution:</strong></p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href=""></a>TB_age_sex <span class="sc">|&gt;</span></span>
@@ -512,27 +512,66 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <span id="cb5-11"><a href=""></a>    <span class="at">TB_cases_min_100k =</span> TB_cases_min<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
 <span id="cb5-12"><a href=""></a>    <span class="at">TB_cases_max_100k =</span> TB_cases_max<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
 <span id="cb5-13"><a href=""></a>  ) <span class="co">#... followed by ggplot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Box plot of TB + risk factor cases, globally:</strong> <img data-src="../results/06_2_riskfactor_boxplot.png" width="2000"></p>
+<p><strong>Box plot of TB + risk factor cases, globally:</strong> <img data-src="images/06_2_riskfactor_boxplot.png" width="2000"></p>
 </div></div>
 </section>
 <section class="slide level2">
 
-<p><strong>5) Analysis 2 - part 1</strong></p>
+<p><strong>5) Analysis 2 - 2024 Dataset - TB age and sex distribution</strong></p>
 <p>(E.g. global cases)</p>
 <div class="columns">
 <div class="column" style="font-size: 0.9em">
-<p>test</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href=""></a><span class="co">#test</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href=""></a>TB_age_sex <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href=""></a>  <span class="fu">group_by</span>(country, sex) <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href=""></a>  <span class="fu">summarise</span>( <span class="co">#getting the summed TB case values for each country and sex.</span></span>
+<span id="cb6-4"><a href=""></a>    <span class="at">TB_best_100k =</span> <span class="fu">sum</span>(TB_cases_best)<span class="sc">/</span><span class="fu">first</span>(population_size)<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>, <span class="co">#Use first(),</span></span>
+<span id="cb6-5"><a href=""></a>    <span class="co"># as the same value is repeated on several rows, for each country. </span></span>
+<span id="cb6-6"><a href=""></a>    <span class="at">TB_min_100k =</span> <span class="fu">sum</span>(TB_cases_min)<span class="sc">/</span><span class="fu">first</span>(population_size)<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
+<span id="cb6-7"><a href=""></a>    <span class="at">TB_max_100k =</span> <span class="fu">sum</span>(TB_cases_max)<span class="sc">/</span><span class="fu">first</span>(population_size)<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
+<span id="cb6-8"><a href=""></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb6-9"><a href=""></a>  <span class="fu">filter</span>(country <span class="sc">%in%</span> top_10_countries_100k) <span class="sc">|&gt;</span> <span class="co">#&lt;-- The new change. </span></span>
+<span id="cb6-10"><a href=""></a>  </span>
+<span id="cb6-11"><a href=""></a>  <span class="co">#The box plot:</span></span>
+<span id="cb6-12"><a href=""></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> TB_best_100k, <span class="at">x =</span> sex)) <span class="sc">+</span>  <span class="co">#It will be the distribution of TB pr. 100k for every sex group. </span></span>
+<span id="cb6-13"><a href=""></a>    <span class="fu">geom_boxplot</span>(<span class="at">alpha =</span> <span class="dv">1</span>, <span class="at">fill =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
+<span id="cb6-14"><a href=""></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb6-15"><a href=""></a>  </span>
+<span id="cb6-16"><a href=""></a>  <span class="fu">labs</span>(</span>
+<span id="cb6-17"><a href=""></a>    <span class="at">x =</span> <span class="st">"Sex"</span>,</span>
+<span id="cb6-18"><a href=""></a>    <span class="at">y =</span> <span class="st">"TB cases per 100k, for each sex, for country</span><span class="sc">\n</span><span class="st">(Best estimate)"</span>,</span>
+<span id="cb6-19"><a href=""></a>    <span class="at">title =</span> <span class="st">"Sex-divided amount of TB cases pr. 100k citizens</span><span class="sc">\n</span><span class="st">Only for the 10 countries with highest TB cases pr. 100k"</span></span>
+<span id="cb6-20"><a href=""></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><img data-src="placeholder_image.png"></p>
+<p><img data-src="images/06_3_sexdistribution_boxplot.png" width="2000"></p>
 </div><div class="column" style="font-size: 0.9em">
-<p>test</p>
+<p>Sex distribution in most burdened countries with TB</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href=""></a><span class="co">#test</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href=""></a>TB_age_sex <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href=""></a>  <span class="fu">group_by</span>(country, sex) <span class="sc">|&gt;</span></span>
+<span id="cb7-3"><a href=""></a>  <span class="fu">summarise</span>( <span class="co">#getting the summed TB case values for each country and sex.</span></span>
+<span id="cb7-4"><a href=""></a>    <span class="at">TB_best_100k =</span> <span class="fu">sum</span>(TB_cases_best)<span class="sc">/</span><span class="fu">first</span>(population_size)<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>, <span class="co">#Use first(),</span></span>
+<span id="cb7-5"><a href=""></a>    <span class="co"># as the same value is repeated on several rows, for each country. </span></span>
+<span id="cb7-6"><a href=""></a>    <span class="at">TB_min_100k =</span> <span class="fu">sum</span>(TB_cases_min)<span class="sc">/</span><span class="fu">first</span>(population_size)<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
+<span id="cb7-7"><a href=""></a>    <span class="at">TB_max_100k =</span> <span class="fu">sum</span>(TB_cases_max)<span class="sc">/</span><span class="fu">first</span>(population_size)<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
+<span id="cb7-8"><a href=""></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb7-9"><a href=""></a>  <span class="fu">filter</span>(country <span class="sc">%in%</span> top_10_countries_100k) <span class="sc">|&gt;</span></span>
+<span id="cb7-10"><a href=""></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> TB_best_100k, <span class="at">y =</span> country, <span class="at">color =</span> sex)) <span class="sc">+</span></span>
+<span id="cb7-11"><a href=""></a>    <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.5</span>), <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb7-12"><a href=""></a>    <span class="fu">geom_errorbarh</span>(</span>
+<span id="cb7-13"><a href=""></a>      <span class="fu">aes</span>(<span class="at">xmin =</span> TB_min_100k, <span class="at">xmax =</span> TB_max_100k),</span>
+<span id="cb7-14"><a href=""></a>      <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.5</span>),</span>
+<span id="cb7-15"><a href=""></a>      <span class="at">height =</span> <span class="fl">0.4</span></span>
+<span id="cb7-16"><a href=""></a>    ) <span class="sc">+</span></span>
+<span id="cb7-17"><a href=""></a>    <span class="fu">labs</span>(</span>
+<span id="cb7-18"><a href=""></a>      <span class="at">x =</span> <span class="st">"TB cases per 100k</span><span class="sc">\n</span><span class="st">(Best estimate with min/max)"</span>,</span>
+<span id="cb7-19"><a href=""></a>      <span class="at">y =</span> <span class="st">"Country"</span>,</span>
+<span id="cb7-20"><a href=""></a>      <span class="at">title =</span> <span class="st">"TB cases pr. 100k by sex</span><span class="sc">\n</span><span class="st">(Countries with top 10 most TB cases pr. 100k)"</span></span>
+<span id="cb7-21"><a href=""></a>    ) <span class="sc">+</span></span>
+<span id="cb7-22"><a href=""></a>    <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Another test image:</p>
-<p><img data-src="placeholder_image.png"></p>
+<p><strong>Scatter plot of TB cases by sex in most burdened countries:</strong></p>
+<p><img data-src="images/06_sexdistribution_scatterplot.png" width="2000"></p>
 </div></div>
 </section>
 <section class="slide level2">

@@ -255,9 +255,7 @@ TB_age_sex |>
 
 ------------------------------------------------------------------------
 
-**9) Analysis 1 - part 3**
-
-(linear models for drug resistance and mortality in the countries. Maybe also include the stuff on detection rate).
+**9) Analysis on data from 2015 to 2024:**
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -280,7 +278,7 @@ TB_10_years_joined |>
   theme_minimal()
 ```
 
-![](../results/05_analysis_relationship_RRTB_Mortality.png)
+![](images/05_analysis_relationship_RRTB_Mortality.png)
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -307,9 +305,7 @@ labs(
   theme_minimal()
 ```
 
-Another test image:
-
-![](../results/05_analysis_mortality_cases_per_100k)
+![](images/05_analysis_mortality_cases_per_100k.png)
 
 :::
 :::::
