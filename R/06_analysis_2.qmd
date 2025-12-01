@@ -1,6 +1,8 @@
 ---
 title: "06_analysis_2"
-format: html
+format:
+  html:
+    self-contained: true
 ---
 
 In this script we will explore only the 2024 datasets, i.e. the "*WHO TB incidence estimates disaggregated by age group, sex and risk factor \[\>0.5Mb\]*" which was joined with 2024 population data from the "*WHO TB burden estimates \[\>1Mb\]*" dataset.
@@ -30,7 +32,7 @@ source("99_proj_func.R")
 ```{r}
 #Loading age and sex and risk group data (2024 only) - Joined and augmented version of the data: 
 
-data_file <- "TB_age_sex_joined.tsv"
+data_file <- "03_aug_TB_age_sex.tsv"
 TB_age_sex  <- load_data(data_file)
 
 #Display the data: 
@@ -241,6 +243,7 @@ TB_age_sex |>
     TB_max_100k = sum(TB_cases_max)/first(population_size)*10^5,
   ) |>
   filter(country %in% top_10_countries_100k) |>
+  
   ggplot(aes(x = TB_best_100k, y = country, color = sex)) +
     geom_point(position = position_dodge(width = 0.5), size = 3) +
     geom_errorbarh(
@@ -267,7 +270,8 @@ This could e.g. be due to reasons like maybe the sex-unspecific surveys TB inspe
 Quick look at the different age groups:
 
 ```{r}
-unique(TB_age_sex$age_group)
+TB_age_sex |> 
+  distinct(age_group)
 ```
 
 **Very important notice**:
