@@ -243,7 +243,7 @@ Another test image:
 ::: {.column width="50%" style="font-size: 0.9em"}
 
 
-```{r 5_1, echo=TRUE, eval=FALSE}
+```{r 9_1, echo=TRUE, eval=FALSE}
 TB_10_years_joined |>
   ggplot(aes(x=(rr_incidence/e_pop_num*10^5),y=e_mort_100k, color=g_whoregion.x)) +
   geom_point(alpha = 0.45)+
