@@ -14,7 +14,7 @@ format:
 
 **1) Introduction to the data**
 
-##### WHO Data 
+##### WHO Data
 
 TB mortality and incidence (by age, sex, HIV status, risk factors, drug resistance)
 
@@ -26,42 +26,38 @@ TB infection estimates in household contacts
 
 ##### Our Project Focus
 
-
-
 ------------------------------------------------------------------------
 
 **2) Cleaning the data**
 
+1.  Load raw WHO datasets (TB burden, age/sex, MDR/RR, LTBI).
 
-1. Load raw WHO datasets (TB burden, age/sex, MDR/RR, LTBI).
+2.  Explore data & run QC (glimpse, missingness, coverage).
 
-2. Explore data & run QC (glimpse, missingness, coverage).
+3.  Remove redundant columns (iso codes, empty HIV bounds).
 
-2. Remove redundant columns (iso codes, empty HIV bounds).
+4.  Standardize variable names (cdr_pct, rr_incidence, Preventive_Tx).
 
-3. Standardize variable names (cdr_pct, rr_incidence, Preventive_Tx).
+5.  Recode categorical variables (sex, risk factors).
 
-4. Recode categorical variables (sex, risk factors).
+6.  Clean strings & metadata (age formatting, survey sources).
 
-5. Clean strings & metadata (age formatting, survey sources).
+7.  Identify missingness patterns (Namibia, DPRK, RR gaps).
 
-6. Identify missingness patterns (Namibia, DPRK, RR gaps).
+8.  Validate with checks (summaries, year structure).
 
-7. Validate with checks (summaries, year structure).
-
-8. Save cleaned datasets (burden, age/sex, LTBI, MDR/RR).
-
-
+9.  Save cleaned datasets (burden, age/sex, LTBI, MDR/RR).
 
 ------------------------------------------------------------------------
 
 **3) Augmenting the data. e.g. standardardized (pr. 100k) vs normal**
 
+::::: columns
+::: {.column width="50%" style="font-size: 0.9em"}
 **Joining datasets:**
-``` r
-#Code for joining dataset (2024):
 
-#Making dataset containing all population data (2024) for every country. 
+```{r 3_1, echo=TRUE, eval=FALSE}
+#Code for joining dataset (2024):
 population_data_2024 <- TB_burden |>
   select(country, e_pop_num, year) |>
   filter(year == 2024) |>
@@ -69,19 +65,22 @@ population_data_2024 <- TB_burden |>
 TB_age_sex <- left_join(TB_age_sex, population_data_2024, by = c("country", "year"))
 ```
 
-``` r
+```{r 3_2, echo=TRUE, eval=FALSE}
 #Code for joining dataset (2015-2024):
 TB_10_years <- inner_join(TB_burden, mdr_rr_data, by = c("country", "year"))
 TB_10_years <- inner_join(TB_10_years, ltbi_data, by = c("country", "year"))
 ```
 
+![](../results/04_1_top10_TB.png){width="2000"}
+:::
+
+::: {.column width="50%" style="font-size: 0.9em"}
 The datasets contain TB cases for a given country. However, having a large population size (India and China), will also cause the overall TB cases to be larger for such countries.
 
 **Solution:** Standardize the data! (I.e. amount of people with TB out of every pr. 100,000 citizen).
 
-``` r
+```{r 3_3, echo=TRUE, eval=FALSE}
 #Data augmentation - Calculating the TB cases pr. 100k (standardizing the data): 
-
 TB_age_sex <- TB_age_sex |>
   group_by(country) |>
   
@@ -98,13 +97,13 @@ TB_age_sex <- TB_age_sex |>
         TB_cases_pr_100k_max = TB_cases_max/population_size*10^5,
         )
 ```
-**Note**: We also got the population size from another dataset, which we joined with.
 
-Top 3 countries with most TB cases (**total**): India, Indonesia, Philippines. 
+![](../results/04_2_top10_TB_100k.png){width="2000"}
 
-Top 3 TB burdened countries (**standardized**): Kiribati, Papua New Guinea, Philippines.
+:::
 
 
+:::::
 
 ------------------------------------------------------------------------
 
@@ -159,7 +158,6 @@ TB_age_sex |>
 ![](../results/06_2_riskfactor_boxplot.png){width="100"}
 :::
 
-
 ------------------------------------------------------------------------
 
 **5) Analysis 2 - part 1**
@@ -167,7 +165,6 @@ TB_age_sex |>
 (E.g. global cases)
 
 ::::: columns
-
 ::: {.column width="50%" style="font-size: 0.9em"}
 test
 
@@ -185,16 +182,11 @@ test
 #test
 ```
 
-
-Another test image: 
+Another test image:
 
 ![](placeholder_image.png)
-
 :::
-
-
 :::::
-
 
 ------------------------------------------------------------------------
 

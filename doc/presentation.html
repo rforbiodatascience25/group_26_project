@@ -432,40 +432,46 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <section class="slide level2">
 
 <p><strong>3) Augmenting the data. e.g.&nbsp;standardardized (pr. 100k) vs normal</strong></p>
+<div class="columns">
+<div class="column" style="font-size: 0.9em">
 <p><strong>Joining datasets:</strong></p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a><span class="co">#Code for joining dataset (2024):</span></span>
-<span id="cb1-2"><a href=""></a></span>
-<span id="cb1-3"><a href=""></a><span class="co">#Making dataset containing all population data (2024) for every country. </span></span>
-<span id="cb1-4"><a href=""></a>population_data_2024 <span class="ot">&lt;-</span> TB_burden <span class="sc">|&gt;</span></span>
-<span id="cb1-5"><a href=""></a>  <span class="fu">select</span>(country, e_pop_num, year) <span class="sc">|&gt;</span></span>
-<span id="cb1-6"><a href=""></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">2024</span>) <span class="sc">|&gt;</span></span>
-<span id="cb1-7"><a href=""></a>  <span class="fu">rename</span>(<span class="at">population_size =</span> e_pop_num)</span>
-<span id="cb1-8"><a href=""></a>TB_age_sex <span class="ot">&lt;-</span> <span class="fu">left_join</span>(TB_age_sex, population_data_2024, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"country"</span>, <span class="st">"year"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href=""></a><span class="co">#Code for joining dataset (2015-2024):</span></span>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a><span class="co">#Code for joining dataset (2024):</span></span>
+<span id="cb1-2"><a href=""></a>population_data_2024 <span class="ot">&lt;-</span> TB_burden <span class="sc">|&gt;</span></span>
+<span id="cb1-3"><a href=""></a>  <span class="fu">select</span>(country, e_pop_num, year) <span class="sc">|&gt;</span></span>
+<span id="cb1-4"><a href=""></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">2024</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-5"><a href=""></a>  <span class="fu">rename</span>(<span class="at">population_size =</span> e_pop_num)</span>
+<span id="cb1-6"><a href=""></a>TB_age_sex <span class="ot">&lt;-</span> <span class="fu">left_join</span>(TB_age_sex, population_data_2024, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"country"</span>, <span class="st">"year"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href=""></a><span class="co">#Code for joining dataset (2015-2024):</span></span>
 <span id="cb2-2"><a href=""></a>TB_10_years <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(TB_burden, mdr_rr_data, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"country"</span>, <span class="st">"year"</span>))</span>
 <span id="cb2-3"><a href=""></a>TB_10_years <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(TB_10_years, ltbi_data, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"country"</span>, <span class="st">"year"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><img data-src="../results/04_1_top10_TB.png" width="2000"></p>
+</div><div class="column" style="font-size: 0.9em">
 <p>The datasets contain TB cases for a given country. However, having a large population size (India and China), will also cause the overall TB cases to be larger for such countries.</p>
 <p><strong>Solution:</strong> Standardize the data! (I.e. amount of people with TB out of every pr. 100,000 citizen).</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a><span class="co">#Data augmentation - Calculating the TB cases pr. 100k (standardizing the data): </span></span>
-<span id="cb3-2"><a href=""></a></span>
-<span id="cb3-3"><a href=""></a>TB_age_sex <span class="ot">&lt;-</span> TB_age_sex <span class="sc">|&gt;</span></span>
-<span id="cb3-4"><a href=""></a>  <span class="fu">group_by</span>(country) <span class="sc">|&gt;</span></span>
-<span id="cb3-5"><a href=""></a>  </span>
-<span id="cb3-6"><a href=""></a>  <span class="co">#Getting the total sum of TB cases for every country</span></span>
-<span id="cb3-7"><a href=""></a>  <span class="fu">mutate</span>( </span>
-<span id="cb3-8"><a href=""></a>    <span class="at">total_TB_cases_best =</span> <span class="fu">sum</span>(TB_cases_best), </span>
-<span id="cb3-9"><a href=""></a>    <span class="at">total_TB_cases_min =</span> <span class="fu">sum</span>(TB_cases_min), </span>
-<span id="cb3-10"><a href=""></a>    <span class="at">total_TB_cases_max =</span> <span class="fu">sum</span>(TB_cases_max)</span>
-<span id="cb3-11"><a href=""></a>    ) <span class="sc">|&gt;</span> </span>
-<span id="cb3-12"><a href=""></a>      <span class="co">#calculate the pr. 100k amount of cases</span></span>
-<span id="cb3-13"><a href=""></a>  <span class="fu">mutate</span>( </span>
-<span id="cb3-14"><a href=""></a>        <span class="at">TB_cases_pr_100k_best =</span> TB_cases_best<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
-<span id="cb3-15"><a href=""></a>        <span class="at">TB_cases_pr_100k_min =</span> TB_cases_min<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
-<span id="cb3-16"><a href=""></a>        <span class="at">TB_cases_pr_100k_max =</span> TB_cases_max<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
-<span id="cb3-17"><a href=""></a>        )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Note</strong>: We also got the population size from another dataset, which we joined with.</p>
-<p>Top 3 countries with most TB cases (<strong>total</strong>): India, Indonesia, Philippines.</p>
-<p>Top 3 TB burdened countries (<strong>standardized</strong>): Kiribati, Papua New Guinea, Philippines.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a><span class="co">#Data augmentation - Calculating the TB cases pr. 100k (standardizing the data): </span></span>
+<span id="cb3-2"><a href=""></a>TB_age_sex <span class="ot">&lt;-</span> TB_age_sex <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href=""></a>  <span class="fu">group_by</span>(country) <span class="sc">|&gt;</span></span>
+<span id="cb3-4"><a href=""></a>  </span>
+<span id="cb3-5"><a href=""></a>  <span class="co">#Getting the total sum of TB cases for every country</span></span>
+<span id="cb3-6"><a href=""></a>  <span class="fu">mutate</span>( </span>
+<span id="cb3-7"><a href=""></a>    <span class="at">total_TB_cases_best =</span> <span class="fu">sum</span>(TB_cases_best), </span>
+<span id="cb3-8"><a href=""></a>    <span class="at">total_TB_cases_min =</span> <span class="fu">sum</span>(TB_cases_min), </span>
+<span id="cb3-9"><a href=""></a>    <span class="at">total_TB_cases_max =</span> <span class="fu">sum</span>(TB_cases_max)</span>
+<span id="cb3-10"><a href=""></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb3-11"><a href=""></a>      <span class="co">#calculate the pr. 100k amount of cases</span></span>
+<span id="cb3-12"><a href=""></a>  <span class="fu">mutate</span>( </span>
+<span id="cb3-13"><a href=""></a>        <span class="at">TB_cases_pr_100k_best =</span> TB_cases_best<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
+<span id="cb3-14"><a href=""></a>        <span class="at">TB_cases_pr_100k_min =</span> TB_cases_min<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
+<span id="cb3-15"><a href=""></a>        <span class="at">TB_cases_pr_100k_max =</span> TB_cases_max<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
+<span id="cb3-16"><a href=""></a>        )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><img data-src="../results/04_2_top10_TB_100k.png" width="2000"></p>
+</div></div>
 </section>
 <section class="slide level2">
 
