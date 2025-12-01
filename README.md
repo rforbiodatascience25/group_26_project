@@ -75,6 +75,8 @@ OpenAI. ChatGPT, Nov. 2024 version, OpenAI, https://www.openai.com/
 <br>
 https://chatgpt.com/g/g-p-691a120e1c8c8191bd40a2ae23704a19-r-course-project/project <br>
 <br>
+I used ChatGPT to rapidly prototype code, gain an understanding of certain R functions, bug fix, and suggest improvements. My aim was to always use this tool responsibly without ruining my own learning. 
+<br>
 
 *s252623:*
 <br>
