@@ -14,37 +14,44 @@ format:
 
 **1) Introduction to the data**
 
-Write your introduction here.
+##### WHO Data 
 
--   What data?
--   From where?
--   Purpose?
+TB mortality and incidence (by age, sex, HIV status, risk factors, drug resistance)
 
-::: column-margin
-**Insert an image**
+Disaggregated incidence by age group, sex, and risk factors
 
-![](placeholder_image.png){width="200"}
-:::
+MDR/RR-TB burden estimates
+
+TB infection estimates in household contacts
+
+##### Our Project Focus
+
+
 
 ------------------------------------------------------------------------
 
 **2) Cleaning the data**
 
-::: column-margin
-**Insert an image**
 
-![](placeholder_image.png){width="200"}
-:::
+1. Load raw WHO datasets (TB burden, age/sex, MDR/RR, LTBI).
 
-```{r}
-#| echo: true
-#| eval: true
+2. Explore data & run QC (glimpse, missingness, coverage).
 
-#Optional: Insert some of the code we used for cleaning the data. 
+2. Remove redundant columns (iso codes, empty HIV bounds).
 
-print("Hello world")
+3. Standardize variable names (cdr_pct, rr_incidence, Preventive_Tx).
 
-```
+4. Recode categorical variables (sex, risk factors).
+
+5. Clean strings & metadata (age formatting, survey sources).
+
+6. Identify missingness patterns (Namibia, DPRK, RR gaps).
+
+7. Validate with checks (summaries, year structure).
+
+8. Save cleaned datasets (burden, age/sex, LTBI, MDR/RR).
+
+
 
 ------------------------------------------------------------------------
 
