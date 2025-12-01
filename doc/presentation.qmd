@@ -35,25 +35,9 @@ format:
 
 ------------------------------------------------------------------------
 
-**2) Cleaning the data**
+## Data cleaning
 
-1.  Load raw WHO datasets (TB burden, age/sex, MDR/RR, LTBI).
-
-2.  Explore data & run QC (glimpse, missingness, coverage).
-
-3.  Remove redundant columns (iso codes, empty HIV bounds).
-
-4.  Standardize variable names (cdr_pct, rr_incidence, Preventive_Tx).
-
-5.  Recode categorical variables (sex, risk factors).
-
-6.  Clean strings & metadata (age formatting, survey sources).
-
-7.  Identify missingness patterns (Namibia, DPRK, RR gaps).
-
-8.  Validate with checks (summaries, year structure).
-
-9.  Save cleaned datasets (burden, age/sex, LTBI, MDR/RR).
+![](../results/images/02_process.png){fig-align="center" width="2000"}
 
 ------------------------------------------------------------------------
 
