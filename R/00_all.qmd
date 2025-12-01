@@ -6,36 +6,47 @@ format:
 execute:
   echo: true
 ---
+
 # Full project report - WHO's tuberculosis analysis
+
+```{r}
+library(knitr)
+```
 
 ## Load Data
 
-```{r child="01_load.qmd"}
+```{r include=FALSE}
+knit_child("01_load.qmd", quiet = TRUE)
 ```
+
+(**Hint**: Set include = TRUE, if you wanna see all the output (not recommended though) ).
 
 ## Clean Data
 
-```{r child="02_clean.qmd"}
+```{r include=FALSE}
+knit_child("02_clean.qmd", quiet = TRUE)
 ```
 
 ## Augment Data
 
-```{r child="03_augment.qmd"}
+```{r include=FALSE}
+knit_child("03_augment.qmd", quiet = TRUE)
 ```
 
 ## Describe Data
 
-```{r child="04_describe.qmd"}
+```{r include=FALSE}
+knit_child("04_describe.qmd", quiet = TRUE)
 ```
 
 ## Analysis Part 1
 
-```{r child="05_analysis_1.qmd"}
+```{r include=FALSE}
+knit_child("05_analysis_1.qmd", quiet = TRUE)
 ```
 
-##Analysis Part 2
+## Analysis Part 2
 
-```{r child="06_analysis_2.qmd"}
+```{r include=FALSE}
+knit_child("06_analysis_2.qmd", quiet = TRUE)
 ```
-
-
