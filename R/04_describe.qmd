@@ -1,6 +1,8 @@
 ---
 title: "04_describe"
-format: html
+format:
+  html:
+    self-contained: true
 ---
 
 WHO 2025 data on Tuberculosis, data description
@@ -35,7 +37,7 @@ source("99_proj_func.R")
 ```{r}
 #Loading age and sex and risk group data (2024 only) - Joined and augmented version of the data: 
 
-data_file          <- "TB_age_sex_joined.tsv"
+data_file          <- "03_aug_TB_age_sex.tsv"
 TB_age_sex_joined  <- load_data(data_file)
 
 #Display the data: 
@@ -47,7 +49,7 @@ slice_sample(TB_age_sex_joined, n=5)
 ```{r}
 #Loading age and sex and risk group data (2024 only) - Joined version of the data: 
 
-data_file           <- "TB_10_years_joined.tsv"
+data_file           <- "03_aug_TB_10_years.tsv"
 TB_10_years_joined  <- load_data(data_file)
 
 #Display the data: 
@@ -59,7 +61,7 @@ slice_sample(TB_10_years_joined, n=5)
 ```{r}
 #Loading TB burden estimates: 
 
-data_file   <- "TB_burden.tsv"
+data_file   <- "02_clean_TB_burden.tsv"
 TB_burden   <- load_data(data_file)
 
 #Display the data: 
@@ -71,9 +73,9 @@ slice_sample(TB_burden, n=5)
 ```{r}
 #Loading the data dictionary: 
 
-data_file   <- "TB_dictionary.csv"
-data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=dictionary"
-TB_dictionary <- raw_load_or_download(data_file, data_url)
+data_file   <- "01_load_dictionary.tsv"
+
+TB_dictionary <- load_data(data_file)
 
 slice_sample(TB_dictionary, n=5)
 ```
@@ -98,7 +100,8 @@ We can briefly explore the big differences between comparing countries based on 
 ```{r}
 
 #Getting the 10 countries with highest total amount of TB cases:  
-top_10_countries <- TB_age_sex_joined |>
+top_10_countries <- 
+  TB_age_sex_joined |>
   group_by(country) |>
   summarise(total_TB = first(total_TB_cases_best)) |>
   arrange(desc(total_TB)) |>
@@ -128,8 +131,6 @@ plot <- TB_age_sex_joined |>
   ) +
   theme_minimal()
 
-
-###
 #Save it
 
 ggsave(
@@ -175,7 +176,7 @@ plot <- TB_age_sex_joined |>
     max_val  = first(total_TB_cases_pr_100k_max),
   ) |> 
   
-  ggplot(aes(x = mean_best, y = fct_reorder(country, mean_best))) +
+    ggplot(aes(x = mean_best, y = fct_reorder(country, mean_best))) +
   #fct_reorder(country, mean_best) ensures that we order sort all countries,
   #based on mean_best value (descending order). 
   
@@ -188,8 +189,6 @@ plot <- TB_age_sex_joined |>
   ) +
   theme_minimal()
 
-
-###
 #Save it
 
 ggsave(
@@ -293,17 +292,16 @@ missing_long <- df10_selection%>%
   mutate(is_missing = is.na(value) | value == "NA")
 
 
-ggplot(missing_long, aes(x = variable, y = row, fill = is_missing)) +
+ggplot(missing_long, aes(x = row, y = variable, fill = is_missing)) +
   geom_tile() +
   scale_fill_manual(values = c("FALSE" = "white", "TRUE" = "black")) +
   labs(title = "Missing values - Heatmap",
-       x = "Variable",
-       y = "Row",
+       x = "Row",
+       y = "Variable",
        fill = "Missing") +
   theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
-  )
+  theme(axis.text.x = element_blank(),    # hide x labels 
+        axis.ticks.x = element_blank())
 ```
 
 **Missing values per country:**
