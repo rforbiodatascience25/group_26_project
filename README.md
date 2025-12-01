@@ -15,6 +15,9 @@ s252623 : FelipeMoralesG
 Welcome to **group 26's project repo**!
 
 In this project, we are going to examine global tuberculosis (TB) cases. <br><br>
+Link to presentation: <br>
+https://raw.githack.com/rforbiodatascience25/group_26_project/main/doc/presentation.html
+<br>
 Link to the data: <br>
 https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data
 <br>
