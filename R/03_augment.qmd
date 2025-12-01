@@ -198,6 +198,13 @@ TB_10_years
 
 Dimensions: This spans **75 columns** and **1900 rows**.
 
+**Removing outlayers from the join:**
+
+```{r}
+TB_10_years <- TB_10_years |>
+  filter(c_cdr_pct <= 100)
+```
+
 **Counting NA values for each column:**
 
 ```{r}
