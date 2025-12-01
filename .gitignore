@@ -6,13 +6,11 @@
 
 # Ignore raw data
 _raw/
-Data/
 data/
-*.xlsx
+*.csv
+*.tsv
 
 #Quarto cache
 *_cache/
 *.log
 
-#Ignore results (have to be generated, and shouldn't be uploaded to Git):
-results/
