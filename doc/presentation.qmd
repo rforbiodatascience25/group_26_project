@@ -311,7 +311,7 @@ global_trends <- df_clean |>
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
-<<<<<<< HEAD
+
 **Scatter plot with linear regresion per country:**
 
 =======
@@ -333,11 +333,11 @@ TB_10_years_joined |>
   theme_minimal()
 ```
 
-![](images/05_analysis_relationship_RRTB_Mortality.png)
+![](images/05_analysis_relationship_RRTB_Mortality.png){width="2000"}
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
-<<<<<<< HEAD
+
 **Box plots of mortality percentages based on different combinations of TB and HIV:**
 
 =======
@@ -363,7 +363,7 @@ labs(
   theme_minimal()
 ```
 
-![](images/05_analysis_mortality_cases_per_100k.png)
+![](images/05_analysis_mortality_cases_per_100k.png){width="2000"}
 :::
 :::::
 
