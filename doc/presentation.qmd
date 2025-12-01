@@ -238,7 +238,7 @@ TB_age_sex |>
 geom_polygon(aes(fill = e_inc_100k)
 ```
 
-![](images/05_evolution_tb_incidence.png){width="1500"}
+![](../results/images/05_evolution_tb_incidence.png){width="1500"}
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -246,7 +246,7 @@ geom_polygon(aes(fill = e_inc_100k)
 geom_polygon(aes(fill = Preventive_Tx_Pct)
 ```
 
-![](images/05_evolution_TPT.png){width="1500"}
+![](../results/images/05_evolution_TPT.png){width="1500"}
 :::
 :::::
 
