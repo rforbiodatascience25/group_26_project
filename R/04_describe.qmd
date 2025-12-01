@@ -84,7 +84,7 @@ slice_sample(TB_dictionary, n=5)
 
 # Data description:
 
-### **\*TB_age_sex_joined (2024) - Description:**
+### **TB_age_sex_joined (2024) - Description:**
 
 This dataset contains the number of TB cases across different countries, categorized by age group and gender. It also includes cases per 100,000 population, enabling standardized and comparable analysis between countries.
 
