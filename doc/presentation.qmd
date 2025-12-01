@@ -170,19 +170,36 @@ TB_age_sex |>
 ------------------------------------------------------------------------
 
 
-**5) Analysis 2 - part 1**
+**5) Analysis 2 - 2024 Dataset - TB age and sex distribution**
 
 (E.g. global cases)
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
-test
-
-```{r test1, echo=TRUE, eval=FALSE}
-#test
+``` {r 5_1, echo=TRUE, eval=FALSE}
+TB_age_sex |>
+  group_by(country, sex) |>
+  summarise( #getting the summed TB case values for each country and sex.
+    TB_best_100k = sum(TB_cases_best)/first(population_size)*10^5, #Use first(),
+    # as the same value is repeated on several rows, for each country. 
+    TB_min_100k = sum(TB_cases_min)/first(population_size)*10^5,
+    TB_max_100k = sum(TB_cases_max)/first(population_size)*10^5,
+  ) |>
+  filter(country %in% top_10_countries_100k) |> #<-- The new change. 
+  
+  #The box plot:
+  ggplot(aes(y = TB_best_100k, x = sex)) +  #It will be the distribution of TB pr. 100k for every sex group. 
+    geom_boxplot(alpha = 1, fill = "orange") +
+    theme(legend.position = "none") +
+  
+  labs(
+    x = "Sex",
+    y = "TB cases per 100k, for each sex, for country\n(Best estimate)",
+    title = "Sex-divided amount of TB cases pr. 100k citizens\nOnly for the 10 countries with highest TB cases pr. 100k"
+  )
 ```
 
-![](placeholder_image.png)
+![](images/06_3_sexdistribution_boxplot.png){width="2000"}
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
