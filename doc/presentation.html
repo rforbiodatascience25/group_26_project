@@ -554,6 +554,49 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 
 <p><strong>9) Analysis 1 - part 3</strong></p>
 <p>(linear models for drug resistance and mortality in the countries. Maybe also include the stuff on detection rate).</p>
+<div class="columns">
+<div class="column" style="font-size: 0.9em">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href=""></a>TB_10_years_joined <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href=""></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>(rr_incidence<span class="sc">/</span>e_pop_num<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>),<span class="at">y=</span>e_mort_100k, <span class="at">color=</span>g_whoregion.x)) <span class="sc">+</span></span>
+<span id="cb8-3"><a href=""></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.45</span>)<span class="sc">+</span></span>
+<span id="cb8-4"><a href=""></a>  <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">'lm'</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)<span class="sc">+</span></span>
+<span id="cb8-5"><a href=""></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">45</span>), <span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">150</span>)) <span class="sc">+</span>  <span class="co">#Eye calculated good limit for the plot</span></span>
+<span id="cb8-6"><a href=""></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>,</span>
+<span id="cb8-7"><a href=""></a>    <span class="at">labels =</span> labels<span class="sc">$</span>label,</span>
+<span id="cb8-8"><a href=""></a>    <span class="at">breaks =</span> labels<span class="sc">$</span>g_whoregion.x) <span class="sc">+</span></span>
+<span id="cb8-9"><a href=""></a>  <span class="fu">labs</span>(</span>
+<span id="cb8-10"><a href=""></a>        <span class="at">x =</span> <span class="st">"RR - TB"</span>, </span>
+<span id="cb8-11"><a href=""></a>        <span class="at">y =</span> <span class="st">"Mortality"</span>, </span>
+<span id="cb8-12"><a href=""></a>        <span class="at">title =</span> <span class="st">"Relation between RR - TB and Mortality per region"</span>, </span>
+<span id="cb8-13"><a href=""></a>        <span class="at">color =</span> <span class="st">"WHO Region"</span>) <span class="sc">+</span></span>
+<span id="cb8-14"><a href=""></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><img data-src="../results/05_analysis_relationship_RRTB_Mortality.png"></p>
+</div><div class="column" style="font-size: 0.9em">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href=""></a>TB_10_years_joined <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href=""></a><span class="fu">mutate</span>(</span>
+<span id="cb9-3"><a href=""></a><span class="at">disease =</span> <span class="fu">case_when</span>(</span>
+<span id="cb9-4"><a href=""></a>  e_tbhiv_prct <span class="sc">&gt;</span> <span class="fu">mean</span>(e_tbhiv_prct, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">&amp;</span> rr_new <span class="sc">&gt;</span> <span class="fu">mean</span>(rr_new, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">~</span> <span class="st">"HIV &amp; RR-TB"</span>,</span>
+<span id="cb9-5"><a href=""></a>  e_tbhiv_prct <span class="sc">&gt;</span> <span class="fu">mean</span>(e_tbhiv_prct, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">~</span> <span class="st">"HIV &amp; TB"</span>,</span>
+<span id="cb9-6"><a href=""></a>  rr_new <span class="sc">&gt;</span> <span class="fu">mean</span>(rr_new, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">~</span> <span class="st">"Only RR-TB"</span>,</span>
+<span id="cb9-7"><a href=""></a>  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Only TB"</span></span>
+<span id="cb9-8"><a href=""></a>)) <span class="sc">|&gt;</span></span>
+<span id="cb9-9"><a href=""></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>disease, <span class="at">y =</span>e_mort_100k, <span class="at">fill =</span> disease))<span class="sc">+</span></span>
+<span id="cb9-10"><a href=""></a><span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb9-11"><a href=""></a><span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>) <span class="sc">+</span> </span>
+<span id="cb9-12"><a href=""></a><span class="fu">labs</span>(</span>
+<span id="cb9-13"><a href=""></a>    <span class="at">x =</span> <span class="st">""</span>,</span>
+<span id="cb9-14"><a href=""></a>    <span class="at">y =</span> <span class="st">"Mortality cases per 100k"</span>,</span>
+<span id="cb9-15"><a href=""></a>    <span class="at">subtitle =</span> <span class="st">"Mortality according to combinations of HIV and RR-TB"</span>,</span>
+<span id="cb9-16"><a href=""></a>    <span class="at">fill =</span> <span class="st">"Disease"</span></span>
+<span id="cb9-17"><a href=""></a>  ) <span class="sc">+</span></span>
+<span id="cb9-18"><a href=""></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Another test image:</p>
+<p><img data-src="../results/05_analysis_mortality_cases_per_100k.png"></p>
+</div></div>
 </section>
 <section class="slide level2">
 

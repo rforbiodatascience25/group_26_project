@@ -222,6 +222,61 @@ Another test image:
 
 (linear models for drug resistance and mortality in the countries. Maybe also include the stuff on detection rate).
 
+::::: columns
+::: {.column width="50%" style="font-size: 0.9em"}
+
+
+```{r 5_1, echo=TRUE, eval=FALSE}
+TB_10_years_joined |>
+  ggplot(aes(x=(rr_incidence/e_pop_num*10^5),y=e_mort_100k, color=g_whoregion.x)) +
+  geom_point(alpha = 0.45)+
+  geom_smooth(method='lm', se = FALSE)+
+  coord_cartesian(xlim=c(0,45), ylim=c(0,150)) +  #Eye calculated good limit for the plot
+  scale_color_brewer(palette = "Set2",
+    labels = labels$label,
+    breaks = labels$g_whoregion.x) +
+  labs(
+        x = "RR - TB", 
+        y = "Mortality", 
+        title = "Relation between RR - TB and Mortality per region", 
+        color = "WHO Region") +
+  theme_minimal()
+```
+
+![](../results/05_analysis_relationship_RRTB_Mortality.png)
+:::
+
+::: {.column width="50%" style="font-size: 0.9em"}
+
+
+```{r 5_2, echo=TRUE, eval=FALSE}
+TB_10_years_joined |>
+mutate(
+disease = case_when(
+  e_tbhiv_prct > mean(e_tbhiv_prct, na.rm = TRUE) & rr_new > mean(rr_new, na.rm = TRUE) ~ "HIV & RR-TB",
+  e_tbhiv_prct > mean(e_tbhiv_prct, na.rm = TRUE) ~ "HIV & TB",
+  rr_new > mean(rr_new, na.rm = TRUE) ~ "Only RR-TB",
+  TRUE ~ "Only TB"
+)) |>
+ggplot(aes(x=disease, y =e_mort_100k, fill = disease))+
+geom_boxplot() +
+scale_fill_brewer(palette = "Set2") + 
+labs(
+    x = "",
+    y = "Mortality cases per 100k",
+    subtitle = "Mortality according to combinations of HIV and RR-TB",
+    fill = "Disease"
+  ) +
+  theme_minimal()
+```
+
+Another test image:
+
+![](../results/05_analysis_mortality_cases_per_100k)
+
+:::
+:::::
+
 ------------------------------------------------------------------------
 
 **10) Conclusion/ wrapping up**

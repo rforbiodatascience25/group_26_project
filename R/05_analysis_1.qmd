@@ -513,10 +513,15 @@ r2_by_region <- TB_10_years_joined |>
 r2_by_region
 ```
 
+
 ```{r}
-labels <-r2_by_region |>
-  mutate(label = str_c(g_whoregion.x, "(R^2 = ", round(r2,2), ")")
-)
+labels <- r2_by_region |>
+  mutate(
+    label = purrr::map2(
+      g_whoregion.x, r2,
+      ~ bquote(.(.x) ~ "(R"^2*" = " * .(round(.y, 2)) * ")")
+    )
+  )
 ```
 
 
