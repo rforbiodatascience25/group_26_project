@@ -41,7 +41,7 @@ format:
 
 ------------------------------------------------------------------------
 
-**3) Augmenting the data. e.g. standardardized (pr. 100k) vs normal**
+**3) Augmenting the data - standardardized (pr. 100k) vs normal**
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
