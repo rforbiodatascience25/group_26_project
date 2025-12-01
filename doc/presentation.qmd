@@ -13,9 +13,9 @@ format:
     embed-resources: true
 ---
 
-## Introduction {.smaller-subtitle}
+## Introduction {.big-text}
 
-### Epidemiological datasets (WHO 2024–2025) {.subtitle}
+### Epidemiological datasets (WHO 2024–2025) 
 :::{.large}
 - TB burden estimates (mortality, incidence, CFR, diagnosis & treatment coverage)
 - Disaggregated incidence by age, sex, HIV status, and risk factors
@@ -23,7 +23,7 @@ format:
 - Household contact TB infection & preventive treatment estimates
 :::
 
-### Project questions {.subtitle}
+### Project questions 
 :::{.large}
 - How do global TB incidence trends compare with the situation in 2024?
 - What is the relationship between TB, HIV co-infection, and antimicrobial resistance?
