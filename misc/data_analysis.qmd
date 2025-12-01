@@ -1,0 +1,126 @@
+---
+title: "MDR_RR_TB_burden_analysis"
+author: "Lun Suša"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(dplyr)
+
+```
+
+```{r}
+mdr_rr_data <- read.csv("../_raw/MDR_RR_TB_burden_estimates.csv")
+
+TB_dictionary <- read.csv("../_raw/TB_data_dictionary.csv")
+
+
+```
+
+**Cleaning of MDR_RR_TB_burden:**
+
+Get the descriptions of the variables from the dictionary to understand what we are looking at:
+
+```{r}
+df_colnames <- tibble(colname = colnames(mdr_rr_data))
+
+dict_filtered <- TB_dictionary[c("variable_name", "definition")] |> 
+   filter(variable_name %in% (df_colnames |> 
+                                pull(colname)))
+dict_filtered
+
+dict_missing <- df_colnames |> 
+  filter(!colname %in% (dict_filtered |>  
+           pull(variable_name)))
+dict_missing
+
+```
+
+The dictionary covers all variables except year (which should be obvious to me but was not).\
+\
+
+Renaming them to be more intuitive:\
+
+```{r}
+mdr_rr_data <- mdr_rr_data |> 
+  rename(
+    
+    # Estimated RR-TB incidence (absolute)
+    rr_incidence = e_inc_rr_num,
+    rr_incidence_max = e_inc_rr_num_hi,
+    rr_incidence_min = e_inc_rr_num_lo,
+    
+    # Estimated RR-TB among lab-confirmed pulmonary TB
+    rr_labconf_pulm = e_rr_in_notified_labconf_pulm,
+    rr_labconf_pulm_max = e_rr_in_notified_labconf_pulm_hi,
+    rr_labconf_pulm_min = e_rr_in_notified_labconf_pulm_lo,
+    
+    # % of new TB cases
+    rr_new = e_rr_pct_new,
+    rr_new_max = e_rr_pct_new_hi,
+    rr_new_min = e_rr_pct_new_lo,
+    
+    # % of previously treated cases with RR-TB
+    rr_treated = e_rr_pct_ret,
+    rr_treated_max = e_rr_pct_ret_hi,
+    rr_treated_min = e_rr_pct_ret_lo,
+    
+    #method for new TB
+    rr_method_new = source_rr_new,
+    
+    #method for previously treated TB
+    rr_method_treat = source_rr_ret
+  )
+```
+
+What is the number of observations per year and per country?\
+
+```{r}
+mdr_rr_data |> count(country)
+mdr_rr_data |> count(year)
+```
+
+So we have 215 countries ans 10 years, with 1 observation per year per country.\
+\
+
+Are there missing values?\
+
+```{r}
+mdr_rr_data |> 
+  summarise(across(everything(),
+                   ~sum(is.na(.))))
+
+```
+
+All estimated values have 330 or 345 missing values.\
+
+```{r}
+mdr_rr_data |> filter(!is.na(iso2)) |> 
+               filter(if_any(everything(), is.na)) |> 
+                slice_sample(n=20)
+
+mdr_rr_data |> filter(is.na(iso2)) 
+```
+
+Random observations are missing estimated values.\
+Namibia is missing 'iso2'.\
+
+Removing 'iso2' and other reduntant variables as with other datasets:
+
+```{r}
+mdr_rr_data <- mdr_rr_data |> 
+  select(-iso2, -iso3, -iso_numeric)
+```
+
+Are there countries that are entirely missing estimated values for all observations?\
+
+```{r}
+mdr_rr_data|> 
+  group_by(country) |> 
+  summarise(all_missing = all(is.na(rr_incidence))) |> 
+  filter(all_missing)
+```
+
+33 out of 215 countries are missing all estimated variables. Not going to do anything about it for now, but worth noting.

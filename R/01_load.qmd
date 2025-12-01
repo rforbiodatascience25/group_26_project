@@ -3,7 +3,6 @@ title: "01_load"
 format:
   html:
     self-contained: true
-output-dir: ../results
 ---
 
 **Load libraries:**
@@ -16,9 +15,6 @@ library(dplyr)
 
 #access to the function for loading the datasets
 source("99_proj_func.R")
-
-
-#############
 
 ```
 

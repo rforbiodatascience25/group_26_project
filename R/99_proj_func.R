@@ -18,7 +18,7 @@ raw_load_or_download <- function(data_file, data_url) {
 
   # Load from disk OR download & save it through the link above:
   if (file.exists(data_file)) {
-    message(paste0("Loading ", data_file, " from local file…"))
+    message(str_c("Loading ", data_file, " from local file…"))
     df <- read_csv(
       file = data_file,
       show_col_types = FALSE
@@ -29,7 +29,7 @@ raw_load_or_download <- function(data_file, data_url) {
       file = data_url,
       show_col_types = FALSE
     )
-    message(paste0("Saving dataset to ", data_file, "."))
+    message(str_c("Saving dataset to ", data_file, "."))
     write_csv(
       x = df,
       file = data_file
@@ -55,7 +55,7 @@ save_data <- function(df, data_name) {
   }
 
   #Save it through to the /data folder:
-  message(paste0("Saving ", data_name, " to /data local file…"))
+  message(str_c("Saving ", data_name, " to /data local file…"))
   write_csv(
     x = df,
     file = data_name
@@ -73,7 +73,7 @@ load_data <- function(data_file) {
 
   # Load from disk OR download & save it through the link above:
   if (file.exists(data_file)) {
-    message(paste0("Loading ", data_file, " from local file…"))
+    message(str_c("Loading ", data_file, " from local file…"))
     df <- read_csv(
       file = data_file,
       show_col_types = FALSE

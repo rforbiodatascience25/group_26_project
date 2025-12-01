@@ -3101,7 +3101,7 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Load libraries:</p>
+<p><strong>Load libraries:</strong></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#libraries</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -3123,8 +3123,13 @@ vertical-align: -.125em;
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#access to the function for loading the datasets</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;99_proj_func.R&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Link to the datasets:</p>
+<p>Note: We are e.g. importing the raw_load_or_download() function which we imported from, ‘99_proj_func.R’.</p>
+<p>It uses a <em>very</em> sparse amount of base R code and helps load the files. The code is designed not to start downloading the data online (through url) if it has already been downloaded and saved in the Data folder.</p>
+<p>We are therefore technically breaking the rule of not using base R to save computational resources for the cluster.</p>
+<p>(With that being said, we could easily have designed a simpler/lazier script, which would just waste resources downloading the dataset every time).</p>
+<p><strong>Link to the datasets:</strong></p>
 <p><a href="https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data#csv_files" class="uri">https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data#csv_files</a></p>
+<p><strong>Loading the 4 main datasets:</strong></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># INFO on all 4 data sets + dictionary</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -3154,13 +3159,13 @@ vertical-align: -.125em;
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_sample</span>(LTBI_est_df, <span class="at">n=</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 25
-  country   iso2  iso3  iso_numeric g_whoregion  year source_hh        e_hh_size
-  &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;                &lt;dbl&gt;
-1 Cameroon  CM    CMR   120         AFR          2016 DHS; 2018-09-15       4.99
-2 Lithuania LT    LTU   440         EUR          2023 DYB; 2011-01-07       2.38
-3 Germany   DE    DEU   276         EUR          2015 DYB; 2011-01-07       2.14
-4 Finland   FI    FIN   246         EUR          2017 DYB; 2010-01-07       2.07
-5 Eswatini  SZ    SWZ   748         AFR          2016 MICS; 2014-01-07      4.04
+  country iso2  iso3  iso_numeric g_whoregion  year source_hh          e_hh_size
+  &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;                  &lt;dbl&gt;
+1 Nepal   NP    NPL   524         SEA          2023 MICS; 2019-01-07        4.25
+2 Gabon   GA    GAB   266         AFR          2020 DHS; 2012-08-03         4.1 
+3 Benin   BJ    BEN   204         AFR          2015 DHS; 2018-02-01         5.19
+4 Tuvalu  TV    TUV   798         WPR          2015 MICS; 2019-01-07        6.05
+5 Lebanon LB    LBN   422         EMR          2022 Central administr…      4.23
 # ℹ 17 more variables: prevtx_data_available &lt;dbl&gt;, newinc_con_prevtx &lt;dbl&gt;,
 #   newinc_con04_prevtx &lt;dbl&gt;, ptsurvey_newinc &lt;dbl&gt;,
 #   ptsurvey_newinc_con04_prevtx &lt;dbl&gt;, e_hh_contacts &lt;dbl&gt;,
@@ -3171,7 +3176,7 @@ vertical-align: -.125em;
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ICIDENCE ESTIMATES BY AGE GROUP, SEX AND RISK FACTOR</span></span>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># INCIDENCE ESTIMATES BY AGE GROUP, SEX AND RISK FACTOR</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>TB_age_sex_df <span class="ot">&lt;-</span> <span class="fu">raw_load_or_download</span>(TB_age_sex_file, TB_age_sex_url)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -3180,16 +3185,17 @@ vertical-align: -.125em;
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_sample</span>(TB_age_sex_df, <span class="at">n=</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 13
-  country   iso2  iso3  iso_numeric  year measure unit  age_group sex  
-  &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;
-1 Cyprus    CY    CYP   196          2024 inc     num   all       a    
-2 Indonesia ID    IDN   360          2024 inc     num   15-19     a    
-3 China     CN    CHN   156          2024 inc     num   all       a    
-4 Fiji      FJ    FJI   242          2024 inc     num   15plus    a    
-5 Ukraine   UA    UKR   804          2024 inc     num   25-34     a    
+  country  iso2  iso3  iso_numeric  year measure unit  age_group sex  
+  &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;
+1 Spain    ES    ESP   724          2024 inc     num   65plus    m    
+2 Qatar    QA    QAT   634          2024 inc     num   15-24     f    
+3 Ethiopia ET    ETH   231          2024 inc     num   20-24     f    
+4 Czechia  CZ    CZE   203          2024 inc     num   15-24     m    
+5 Brazil   BR    BRA   076          2024 inc     num   0-4       a    
 # ℹ 4 more variables: risk_factor &lt;chr&gt;, best &lt;dbl&gt;, lo &lt;dbl&gt;, hi &lt;dbl&gt;</code></pre>
 </div>
 </div>
+<p>Note: This is the only dataset that ONLY contains data from <strong>2024</strong>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># MDR/RR-TB BURDEN ESTIMATES</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -3202,11 +3208,11 @@ vertical-align: -.125em;
 <pre><code># A tibble: 5 × 20
   country   iso2  iso3  iso_numeric g_whoregion  year source_rr_new e_rr_pct_new
   &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;                &lt;dbl&gt;
-1 Cameroon  CM    CMR   120         AFR          2015 Survey                 1.8
-2 Saint Vi… VC    VCT   670         AMR          2016 &lt;NA&gt;                  NA  
-3 Tunisia   TN    TUN   788         EMR          2021 Survey &amp; Sur…          1.2
-4 Pakistan  PK    PAK   586         EMR          2020 Survey &amp; Sur…          2.6
-5 Slovakia  SK    SVK   703         EUR          2015 Surveillance           1.8
+1 Philippi… PH    PHL   608         WPR          2024 Survey &amp; Sur…         2.3 
+2 Nigeria   NG    NGA   566         AFR          2016 Survey &amp; Sur…         4   
+3 Singapore SG    SGP   702         WPR          2024 Surveillance          2   
+4 Vanuatu   VU    VUT   548         WPR          2016 Surveillance          1.8 
+5 Jamaica   JM    JAM   388         AMR          2016 Surveillance          0.63
 # ℹ 12 more variables: e_rr_pct_new_lo &lt;dbl&gt;, e_rr_pct_new_hi &lt;dbl&gt;,
 #   source_rr_ret &lt;chr&gt;, e_rr_pct_ret &lt;dbl&gt;, e_rr_pct_ret_lo &lt;dbl&gt;,
 #   e_rr_pct_ret_hi &lt;dbl&gt;, e_inc_rr_num &lt;dbl&gt;, e_inc_rr_num_lo &lt;dbl&gt;,
@@ -3215,6 +3221,10 @@ vertical-align: -.125em;
 #   e_rr_in_notified_labconf_pulm_hi &lt;dbl&gt;</code></pre>
 </div>
 </div>
+<p>Note:</p>
+<p><strong>MDR-TB</strong> = Multidrug-resistant tuberculosis</p>
+<p><strong>RR-TB</strong> = Rifampicin-resistant tuberculosis</p>
+<p>(Rifampicin is a group of antibiotics).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#TB BURDEN ESTIMATES</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -3227,11 +3237,11 @@ vertical-align: -.125em;
 <pre><code># A tibble: 5 × 50
   country         iso2  iso3  iso_numeric g_whoregion  year e_pop_num e_inc_100k
   &lt;chr&gt;           &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;
-1 Liberia         LR    LBR   430         AFR          2021   5259313        232
-2 Eritrea         ER    ERI   232         AFR          2000   2247028       1440
-3 Lithuania       LT    LTU   440         EUR          2009   3163253        109
-4 Togo            TG    TGO   768         AFR          2012   7100736         76
-5 Trinidad and T… TT    TTO   780         AMR          2015   1429186         18
+1 Netherlands An… AN    ANT   530         AMR          2009    209131        2.2
+2 Greece          GR    GRC   300         EUR          2020  10699378        4.4
+3 United States … US    USA   840         AMR          2015 326126494        3.3
+4 Guinea          GN    GIN   324         AFR          2008   9898860      187  
+5 Palau           PW    PLW   585         WPR          2019     17791       34  
 # ℹ 42 more variables: e_inc_100k_lo &lt;dbl&gt;, e_inc_100k_hi &lt;dbl&gt;,
 #   e_inc_num &lt;dbl&gt;, e_inc_num_lo &lt;dbl&gt;, e_inc_num_hi &lt;dbl&gt;,
 #   e_tbhiv_prct &lt;dbl&gt;, e_tbhiv_prct_lo &lt;lgl&gt;, e_tbhiv_prct_hi &lt;lgl&gt;,
@@ -3251,15 +3261,46 @@ vertical-align: -.125em;
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_sample</span>(TB_dict, <span class="at">n=</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 4
-  variable_name      dataset                      code_list definition          
-  &lt;chr&gt;              &lt;chr&gt;                        &lt;chr&gt;     &lt;chr&gt;               
-1 e_inc_tbhiv_num_hi Estimates                    &lt;NA&gt;      Estimated incidence…
-2 newrel_f4554       Notification                 &lt;NA&gt;      New and relapse cas…
-3 nrr_hivneg         Drug resistance surveillance &lt;NA&gt;      Among patients with…
-4 newrel_sexunk014   Notification                 &lt;NA&gt;      New and relapse cas…
-5 hospd_dstb_prct    Expenditure and utilisation  &lt;NA&gt;      Estimated percentag…</code></pre>
+  variable_name                   dataset                   code_list definition
+  &lt;chr&gt;                           &lt;chr&gt;                     &lt;chr&gt;     &lt;chr&gt;     
+1 prisoners_screen_data_available Policies and services     0=No; 1=… Are data …
+2 private_sector_link             UNHLM commitments         0=No; 1=… Have link…
+3 new_ep_m4554                    Notification              &lt;NA&gt;      New extra…
+4 rr_hivpos                       Drug resistance surveill… &lt;NA&gt;      Among pat…
+5 new_sp_def                      Outcomes                  &lt;NA&gt;      Outcomes …</code></pre>
 </div>
 </div>
+<p>The dictionary file is part of the official TB 2025 WHO data.</p>
+<p>It contains an explanation of some of the terms used in the data.</p>
+<p>It is advisable to quickly skim through it before proceeding.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>TB_dict</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 698 × 4
+   variable_name   dataset code_list definition                                 
+   &lt;chr&gt;           &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;                                      
+ 1 budget_cpp_dstb Budget  &lt;NA&gt;      Average cost of drugs budgeted per patient…
+ 2 budget_cpp_mdr  Budget  &lt;NA&gt;      Average cost of drugs budgeted per patient…
+ 3 budget_cpp_tpt  Budget  &lt;NA&gt;      Average cost of drugs budgeted per patient…
+ 4 budget_cpp_xdr  Budget  &lt;NA&gt;      Average cost of drugs budgeted per patient…
+ 5 budget_fld      Budget  &lt;NA&gt;      Budget required for drugs to treat drug-su…
+ 6 budget_lab      Budget  &lt;NA&gt;      Budget required for laboratory infrastruct…
+ 7 budget_mdrmgt   Budget  &lt;NA&gt;      Budget required for programme costs to tre…
+ 8 budget_orsrvy   Budget  &lt;NA&gt;      Budget required for operational research a…
+ 9 budget_oth      Budget  &lt;NA&gt;      Budget required for all other budget line …
+10 budget_patsup   Budget  &lt;NA&gt;      Budget required for patient support (US Do…
+# ℹ 688 more rows</code></pre>
+</div>
+</div>
+<p><strong>Final remark:</strong></p>
+<p>We will later separate the analysis into <strong>05_analysis_1</strong> and <strong>05_analysis_2</strong>.</p>
+<p><strong><em>05_analysis_1:</em></strong></p>
+<p>*<strong>TB infection estimates in household contacts</strong></p>
+<p>*<strong>MDR/RR-TB burden estimates</strong></p>
+<p>*<strong>TB Burden Estimates</strong></p>
+<p><strong><em>05_analysis_2:</em></strong></p>
+<p>*<strong>Incidence estimates by age group, sex, and risk factor</strong></p>
+<p>(2024 data only).</p>
 
 </main>
 <!-- /main column -->
