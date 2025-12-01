@@ -1,5 +1,41 @@
 ---
 title: "00_all"
-format: html
+format:
+  html:
+    self-contained: true
+execute:
+  echo: true
 ---
+# Full project report - WHO's tuberculosis analysis
+
+## Load Data
+
+```{r child="01_load.qmd"}
+```
+
+## Clean Data
+
+```{r child="02_clean.qmd"}
+```
+
+## Augment Data
+
+```{r child="03_augment.qmd"}
+```
+
+## Describe Data
+
+```{r child="04_describe.qmd"}
+```
+
+## Analysis Part 1
+
+```{r child="05_analysis_1.qmd"}
+```
+
+##Analysis Part 2
+
+```{r child="06_analysis_2.qmd"}
+```
+
 
