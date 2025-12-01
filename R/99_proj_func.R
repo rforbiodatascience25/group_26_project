@@ -56,7 +56,7 @@ save_data <- function(df, data_name) {
 
   #Save it through to the /data folder:
   message(str_c("Saving ", data_name, " to /data local file…"))
-  write_csv(
+  write_tsv(
     x = df,
     file = data_name
   )
@@ -74,7 +74,7 @@ load_data <- function(data_file) {
   # Load from disk OR download & save it through the link above:
   if (file.exists(data_file)) {
     message(str_c("Loading ", data_file, " from local file…"))
-    df <- read_csv(
+    df <- read_tsv(
       file = data_file,
       show_col_types = FALSE
     )

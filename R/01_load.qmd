@@ -60,6 +60,7 @@ Load and check each data set:
 # TB INFECTION ESTIMATES IN HOUSEHOLD CONTACTS
 
 LTBI_est_df <- raw_load_or_download(LTBI_est_file, LTBI_est_url)
+save_data(LTBI_est_df, "01_load_LTBI_estimates.tsv")
 slice_sample(LTBI_est_df, n=5)
 ```
 
@@ -67,6 +68,7 @@ slice_sample(LTBI_est_df, n=5)
 # INCIDENCE ESTIMATES BY AGE GROUP, SEX AND RISK FACTOR
 
 TB_age_sex_df <- raw_load_or_download(TB_age_sex_file, TB_age_sex_url)
+save_data(TB_age_sex_df, "01_load_TB_age_sex.tsv")
 slice_sample(TB_age_sex_df, n=5)
 ```
 
@@ -76,6 +78,7 @@ Note: This is the only dataset that ONLY contains data from **2024**.
 # MDR/RR-TB BURDEN ESTIMATES
 
 MDR_RR_est_df <- raw_load_or_download(MDR_RR_est_file, MDR_RR_est_url)
+save_data(MDR_RR_est_df, "01_load_MDR_RR_burden_estimates.tsv")
 slice_sample(MDR_RR_est_df, n=5)
 ```
 
@@ -91,6 +94,7 @@ Note:
 #TB BURDEN ESTIMATES
 
 TB_countries_df <- raw_load_or_download(TB_countries_file, TB_countries_url)
+save_data(TB_countries_df, "01_load_TB_burden.tsv")
 slice_sample(TB_countries_df, n=5)
 
 ```
@@ -99,6 +103,7 @@ slice_sample(TB_countries_df, n=5)
 # DICTIONARY
 
 TB_dict <- raw_load_or_download(TB_dict_file, TB_dict_url)
+save_data(TB_dict, "01_load_dictionary.tsv")
 slice_sample(TB_dict, n=5)
 ```
 
