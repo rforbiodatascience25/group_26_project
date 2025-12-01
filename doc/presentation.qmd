@@ -180,7 +180,6 @@ TB_age_sex |>
   ggplot(aes(y = TB_best_100k, x = sex)) +  #It will be the distribution of TB pr. 100k for every sex group. 
     geom_boxplot(alpha = 1, fill = "orange") +
     theme(legend.position = "none") +
-  
   labs(
     x = "Sex",
     y = "TB cases per 100k, for each sex, for country\n(Best estimate)",
@@ -192,8 +191,11 @@ TB_age_sex |>
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
+<<<<<<< Updated upstream
 Sex distribution in most burdened countries with TB
 
+=======
+>>>>>>> Stashed changes
 ```{r 5_2, echo=TRUE, eval=FALSE}
 TB_age_sex |>
   group_by(country, sex) |>
@@ -209,19 +211,21 @@ TB_age_sex |>
     geom_errorbarh(
       aes(xmin = TB_min_100k, xmax = TB_max_100k),
       position = position_dodge(width = 0.5),
-      height = 0.4
-    ) +
+      height = 0.4) +
     labs(
       x = "TB cases per 100k\n(Best estimate with min/max)",
       y = "Country",
-      title = "TB cases pr. 100k by sex\n(Countries with top 10 most TB cases pr. 100k)"
-    ) +
+      title = "TB cases pr. 100k by sex\n(Countries with top 10 most TB cases pr. 100k)") +
     theme_minimal()
 ```
 
+<<<<<<< Updated upstream
 **Scatter plot of TB cases by sex in most burdened countries:**
 
 ![](images/06_3_sexdistribution_boxplot.png){width="2000"}
+=======
+![](images/06_sexdistribution_scatterplot.png){width="1000"}
+>>>>>>> Stashed changes
 :::
 :::::
 

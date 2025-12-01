@@ -512,8 +512,12 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <span id="cb5-11"><a href=""></a>    <span class="at">TB_cases_min_100k =</span> TB_cases_min<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
 <span id="cb5-12"><a href=""></a>    <span class="at">TB_cases_max_100k =</span> TB_cases_max<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
 <span id="cb5-13"><a href=""></a>  ) <span class="co">#... followed by ggplot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<<<<<<< Updated upstream
 <p><strong>Box plot of TB + risk factor cases, globally:</strong></p>
 <p><img data-src="images/06_2_riskfactor_boxplot.png" width="2000"></p>
+=======
+<p><strong>Box plot of TB + risk factor cases, globally:</strong> <img data-src="images/06_2_riskfactor_boxplot.png" width="2000"></p>
+>>>>>>> Stashed changes
 </div></div>
 </section>
 <section class="slide level2">
@@ -537,6 +541,7 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <span id="cb6-12"><a href=""></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> TB_best_100k, <span class="at">x =</span> sex)) <span class="sc">+</span>  <span class="co">#It will be the distribution of TB pr. 100k for every sex group. </span></span>
 <span id="cb6-13"><a href=""></a>    <span class="fu">geom_boxplot</span>(<span class="at">alpha =</span> <span class="dv">1</span>, <span class="at">fill =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
 <span id="cb6-14"><a href=""></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<<<<<<< Updated upstream
 <span id="cb6-15"><a href=""></a>  </span>
 <span id="cb6-16"><a href=""></a>  <span class="fu">labs</span>(</span>
 <span id="cb6-17"><a href=""></a>    <span class="at">x =</span> <span class="st">"Sex"</span>,</span>
@@ -547,6 +552,16 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <p><img data-src="images/06_3_sexdistribution_boxplot.png" width="2000"></p>
 </div><div class="column" style="font-size: 0.9em">
 <p>Sex distribution in most burdened countries with TB</p>
+=======
+<span id="cb6-15"><a href=""></a>  <span class="fu">labs</span>(</span>
+<span id="cb6-16"><a href=""></a>    <span class="at">x =</span> <span class="st">"Sex"</span>,</span>
+<span id="cb6-17"><a href=""></a>    <span class="at">y =</span> <span class="st">"TB cases per 100k, for each sex, for country</span><span class="sc">\n</span><span class="st">(Best estimate)"</span>,</span>
+<span id="cb6-18"><a href=""></a>    <span class="at">title =</span> <span class="st">"Sex-divided amount of TB cases pr. 100k citizens</span><span class="sc">\n</span><span class="st">Only for the 10 countries with highest TB cases pr. 100k"</span></span>
+<span id="cb6-19"><a href=""></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><img data-src="images/06_3_sexdistribution_boxplot.png" width="2000"></p>
+</div><div class="column" style="font-size: 0.9em">
+>>>>>>> Stashed changes
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href=""></a>TB_age_sex <span class="sc">|&gt;</span></span>
 <span id="cb7-2"><a href=""></a>  <span class="fu">group_by</span>(country, sex) <span class="sc">|&gt;</span></span>
@@ -562,6 +577,7 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <span id="cb7-12"><a href=""></a>    <span class="fu">geom_errorbarh</span>(</span>
 <span id="cb7-13"><a href=""></a>      <span class="fu">aes</span>(<span class="at">xmin =</span> TB_min_100k, <span class="at">xmax =</span> TB_max_100k),</span>
 <span id="cb7-14"><a href=""></a>      <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.5</span>),</span>
+<<<<<<< Updated upstream
 <span id="cb7-15"><a href=""></a>      <span class="at">height =</span> <span class="fl">0.4</span></span>
 <span id="cb7-16"><a href=""></a>    ) <span class="sc">+</span></span>
 <span id="cb7-17"><a href=""></a>    <span class="fu">labs</span>(</span>
@@ -573,6 +589,16 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 </div>
 <p><strong>Scatter plot of TB cases by sex in most burdened countries:</strong></p>
 <p><img data-src="images/06_3_sexdistribution_boxplot.png" width="2000"></p>
+=======
+<span id="cb7-15"><a href=""></a>      <span class="at">height =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb7-16"><a href=""></a>    <span class="fu">labs</span>(</span>
+<span id="cb7-17"><a href=""></a>      <span class="at">x =</span> <span class="st">"TB cases per 100k</span><span class="sc">\n</span><span class="st">(Best estimate with min/max)"</span>,</span>
+<span id="cb7-18"><a href=""></a>      <span class="at">y =</span> <span class="st">"Country"</span>,</span>
+<span id="cb7-19"><a href=""></a>      <span class="at">title =</span> <span class="st">"TB cases pr. 100k by sex</span><span class="sc">\n</span><span class="st">(Countries with top 10 most TB cases pr. 100k)"</span>) <span class="sc">+</span></span>
+<span id="cb7-20"><a href=""></a>    <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><img data-src="images/06_sexdistribution_scatterplot.png" width="1000"></p>
+>>>>>>> Stashed changes
 </div></div>
 </section>
 <section class="slide level2">
