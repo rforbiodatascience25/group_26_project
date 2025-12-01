@@ -71,7 +71,7 @@ TB_10_years <- inner_join(TB_burden, mdr_rr_data, by = c("country", "year"))
 TB_10_years <- inner_join(TB_10_years, ltbi_data, by = c("country", "year"))
 ```
 
-![](images/04_1_top10_TB.png){width="2000"}
+![](../results/images/04_1_top10_TB.png){width="2000"}
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -98,7 +98,7 @@ TB_age_sex <- TB_age_sex |>
         )
 ```
 
-![](images/04_2_top10_TB_100k.png){width="2000"}
+![](../results/images/04_2_top10_TB_100k.png){width="2000"}
 :::
 :::::
 
@@ -129,7 +129,7 @@ TB_age_sex |>
 
 **Bar chart of the risk factor distribution:** **(Without the 'no risk factor' label)**
 
-![](images/06_1_riskfactor_barchart.png){width="2000"}
+![](../results/images/06_1_riskfactor_barchart.png){width="2000"}
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -153,7 +153,7 @@ TB_age_sex |>
 
 **Box plot of TB + risk factor cases, globally:** 
 
-![](images/06_2_riskfactor_boxplot.png){width="2000"}
+![](../results/images/06_2_riskfactor_boxplot.png){width="2000"}
 :::
 :::::
 
@@ -187,15 +187,13 @@ TB_age_sex |>
   )
 ```
 
-![](images/06_3_sexdistribution_boxplot.png){width="2000"}
+![](../results/images/06_3_sexdistribution_boxplot.png){width="2000"}
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
-<<<<<<< Updated upstream
+
 Sex distribution in most burdened countries with TB
 
-=======
->>>>>>> Stashed changes
 ```{r 5_2, echo=TRUE, eval=FALSE}
 TB_age_sex |>
   group_by(country, sex) |>
@@ -219,13 +217,11 @@ TB_age_sex |>
     theme_minimal()
 ```
 
-<<<<<<< Updated upstream
 **Scatter plot of TB cases by sex in most burdened countries:**
 
-![](images/06_3_sexdistribution_boxplot.png){width="2000"}
-=======
-![](images/06_sexdistribution_scatterplot.png){width="1000"}
->>>>>>> Stashed changes
+![](../results/images/06_3_sexdistribution_boxplot.png){width="2000"}
+##Bhavya erase this, and change the image
+
 :::
 :::::
 
@@ -286,7 +282,7 @@ gap_analysis <- gap_analysis |>
   )
 ```
 
-![](images/05_burden_treatment.png){width="600"}
+![](../results/images/05_burden_treatment.png){width="600"}
 
 :::
 
@@ -307,7 +303,7 @@ global_trends <- df_clean |>
   mutate(Contact_Coverage = (Total_TPT_Contacts / Total_Contacts_Eligible) * 100)
 ```
 
-![](images/05_coverage.png){width="1500"}
+![](../results/images/05_coverage.png){width="1500"}
 :::
 :::::
 
@@ -337,7 +333,7 @@ TB_10_years_joined |>
   theme_minimal()
 ```
 
-![](images/05_analysis_relationship_RRTB_Mortality.png){width="2000"}
+![](../results/images/05_analysis_relationship_RRTB_Mortality.png){width="2000"}
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -365,7 +361,7 @@ labs(
   theme_minimal()
 ```
 
-![](images/05_analysis_mortality_cases_per_100k.png){width="2000"}
+![](../results/images/05_analysis_mortality_cases_per_100k.png){width="2000"}
 :::
 :::::
 
