@@ -1,30 +1,9 @@
 ---
 title: "05_analysis_1"
-format: html
+format:
+  html:
+    self-contained: true
 ---
-
-possible questions
-
-how do TB incidence and mortality trends vary across countries and over time?
-
-how do MDR/RR-TB trends compare to overall TB trends?
-
-how are household TB infection rates distributed globally?
-
-is higher TB incidence associated with higher household infection?
-
-how has household infection changed over time?
-
-which countries have the highest TB data gaps?
-
-------------------------------------------------------------------------
-
-**Note to self - add this in all code chunks when wrapping up:**
-
-```{r}
-#| echo: true
-#| eval: true
-```
 
 **Loading relevant libraries:**
 
@@ -48,7 +27,7 @@ source("99_proj_func.R")
 ```{r}
 #Loading age and sex and risk group data (2024 only): 
 
-data_file           <- "TB_10_years_joined.tsv"
+data_file           <- "03_aug_TB_10_years.tsv"
 TB_10_years_joined  <- load_data(data_file)
 
 #Display the data: 
@@ -60,10 +39,8 @@ TB_10_years_joined
 ```{r}
 #Loading the data dictionary: 
 
-data_file   <- "TB_dictionary.csv"
-data_url    <- "https://extranet.who.int/tme/generateCSV.asp?ds=dictionary"
-TB_dictionary <- raw_load_or_download(data_file, data_url)
-
+data_file   <- "01_load__ictionary.tsv"
+TB_dictionary <- load_data(data_file)
 TB_dictionary
 
 ```
@@ -410,13 +387,14 @@ gap_analysis <- TB_10_years_joined |>
 # Burden Threshold: Top 10% of countries with the most contacts
 burden_threshold <- quantile(gap_analysis$Contacts_best, 0.90) 
 
-# Coverage Threshold: Less than 50% coverage (Performance Gap)
-coverage_threshold <- 50
+# Coverage Threshold: Less than 40% coverage (Performance Gap)
+coverage_threshold <- 40
 
 # 3. Create a Flag for High Risk Countries
 gap_analysis <- gap_analysis |>
   mutate(
-    Is_High_Risk = if_else(Contacts_best >= burden_threshold & Preventive_Tx_Pct < coverage_threshold, 
+    Is_High_Risk = if_else(Contacts_best >= burden_threshold 
+                           & Preventive_Tx_Pct < coverage_threshold, 
                            "High Risk (High Burden, Low Coverage)", 
                            "Other")
   )
@@ -442,7 +420,7 @@ ggplot(gap_analysis, aes(x = Contacts_best, y = Preventive_Tx_Pct)) +
   
   labs(
     title = "The Gap: Burden vs. Treatment Performance",
-    subtitle = paste0("Highlighted: Top 10% Burden (> ", comma(burden_threshold), " contacts) AND Coverage < 50%"),
+    subtitle = paste0("Highlighted: Top 10% Burden (> ", comma(burden_threshold), " contacts) AND Coverage < 40%"),
     x = "Household Contacts (Log Scale)",
     y = "Preventive Treatment Coverage (%)",
     color = "Country Status"
@@ -468,6 +446,7 @@ TB_10_years_joined |>
     Incidence = mean(rr_incidence, na.rm = TRUE)) |>
   pivot_longer(cols = c(New, Treated, Incidence), 
                names_to = 'type', values_to = 'value') |>
+  
   ggplot(aes(x = year, y = value)) +
   geom_point(alpha = 0.45) +
   geom_smooth(aes(color = type)) +
