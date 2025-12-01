@@ -71,7 +71,7 @@ TB_10_years <- inner_join(TB_burden, mdr_rr_data, by = c("country", "year"))
 TB_10_years <- inner_join(TB_10_years, ltbi_data, by = c("country", "year"))
 ```
 
-![](../results/04_1_top10_TB.png){width="2000"}
+![](images/04_1_top10_TB.png){width="2000"}
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -98,7 +98,7 @@ TB_age_sex <- TB_age_sex |>
         )
 ```
 
-![](../results/04_2_top10_TB_100k.png){width="2000"}
+![](images/04_2_top10_TB_100k.png){width="2000"}
 
 :::
 
@@ -133,7 +133,7 @@ TB_age_sex |>
 
 **Bar chart of the risk factor distribution:** **(Without the 'no risk factor' label)**
 
-![](../results/06_1_riskfactor_barchart.png){width="2000"}
+![](images/06_1_riskfactor_barchart.png){width="2000"}
 
 :::
 
@@ -159,7 +159,7 @@ TB_age_sex |>
 ```
 
 **Box plot of TB + risk factor cases, globally:**
-![](../results/06_2_riskfactor_boxplot.png){width="2000"}
+![](images/06_2_riskfactor_boxplot.png){width="2000"}
 
 :::
 
