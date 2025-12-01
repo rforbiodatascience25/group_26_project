@@ -99,9 +99,7 @@ TB_age_sex <- TB_age_sex |>
 ```
 
 ![](images/04_2_top10_TB_100k.png){width="2000"}
-
 :::
-
 :::::
 
 ------------------------------------------------------------------------
@@ -109,12 +107,10 @@ TB_age_sex <- TB_age_sex |>
 **4) Analysis - 2024 dataset - TB + Risk factor distribution**
 
 ::::: columns
-
 ::: {.column width="50%" style="font-size: 0.9em"}
-
 **Bar chart - TB + Risk factor cases in the top 10 most TB burdened countries:**
 
-``` {r 4_1, echo=TRUE, eval=FALSE}
+```{r 4_1, echo=TRUE, eval=FALSE}
 #Code for making the plot of the TB + risk factor cases:
 TB_age_sex |>
   filter(country %in% top_10_countries_100k) |>
@@ -134,12 +130,9 @@ TB_age_sex |>
 **Bar chart of the risk factor distribution:** **(Without the 'no risk factor' label)**
 
 ![](images/06_1_riskfactor_barchart.png){width="2000"}
-
 :::
 
-
 ::: {.column width="50%" style="font-size: 0.9em"}
-
 **Box plots of the global risk factor distribution:**
 
 ``` r
@@ -158,17 +151,11 @@ TB_age_sex |>
   ) #... followed by ggplot
 ```
 
-**Box plot of TB + risk factor cases, globally:**
-![](images/06_2_riskfactor_boxplot.png){width="2000"}
-
+**Box plot of TB + risk factor cases, globally:** ![](images/06_2_riskfactor_boxplot.png){width="2000"}
 :::
-
-
-::::: 
-
+:::::
 
 ------------------------------------------------------------------------
-
 
 **5) Analysis 2 - 2024 Dataset - TB age and sex distribution**
 
@@ -176,7 +163,7 @@ TB_age_sex |>
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
-``` {r 5_1, echo=TRUE, eval=FALSE}
+```{r 5_1, echo=TRUE, eval=FALSE}
 TB_age_sex |>
   group_by(country, sex) |>
   summarise( #getting the summed TB case values for each country and sex.
@@ -204,6 +191,7 @@ TB_age_sex |>
 
 ::: {.column width="50%" style="font-size: 0.9em"}
 Sex distribution in most burdened countries with TB
+
 ```{r 5_2, echo=TRUE, eval=FALSE}
 TB_age_sex |>
   group_by(country, sex) |>
@@ -245,24 +233,84 @@ TB_age_sex |>
 
 **7) Analysis 1 - part 1**
 
-(World map plots)
+
+::::: columns
+::: {.column width="50%" style="font-size: 0.9em"}
+```{r 5_1, echo=TRUE, eval=FALSE}
+geom_polygon(aes(fill = e_inc_100k)
+```
+
+![](images/05_evolution_tb_incidence.png){width="1500"}
+:::
+
+::: {.column width="50%" style="font-size: 0.9em"}
+```{r 5_1, echo=TRUE, eval=FALSE}
+geom_polygon(aes(fill = Preventive_Tx_Pct)
+```
+
+![](images/05_evolution_TPT.png){width="1500"}
+:::
+:::::
 
 ------------------------------------------------------------------------
 
 **8) Analysis 1 - part 2**
 
-(Household contacts)
+::::: columns
+::: {.column width="50%" style="font-size: 0.9em"}
+```{r 5_1, echo=TRUE, eval=FALSE}
+
+gap_analysis <- TB_10_years_joined |>
+  filter(year == 2024) |>
+  filter(!is.na(Preventive_Tx_Pct) & !is.na(Contacts_best))
+
+# 2. Define Dynamic Thresholds
+# Burden Threshold: Top 10% of countries with the most contacts
+burden_threshold <- quantile(gap_analysis$Contacts_best, 0.90) 
+
+# Coverage Threshold: Less than 40% coverage
+coverage_threshold <- 40
+
+# 3. Create a Flag for High Risk Countries
+gap_analysis <- gap_analysis |>
+  mutate(
+    Is_High_Risk = if_else(Contacts_best >= burden_threshold & Preventive_Tx_Pct < coverage_threshold, 
+                           "High Risk (High Burden, Low Coverage)", 
+                           "Other")
+  )
+```
+
+![](images/05_burden_treatment.png){width="600"}
+
+:::
+
+::: {.column width="50%" style="font-size: 0.9em"}
+```{r 5_1, echo=TRUE, eval=FALSE}
+
+df_clean <- df |>
+  mutate(TPT_Contacts_Num = Contacts_best * Preventive_Tx_Pct / 100)
+
+global_trends <- df_clean |>
+  filter(year >= 2015) |>
+  group_by(year) |>
+  summarise(
+    Total_TPT_Contacts = sum(TPT_Contacts_Num, na.rm = TRUE),
+    Total_Contacts_Eligible = sum(Contacts_best, na.rm = TRUE),
+    Avg_Child_Coverage = mean(Preventive_Tx_Kids_Pct, na.rm = TRUE)
+  ) |>
+  mutate(Contact_Coverage = (Total_TPT_Contacts / Total_Contacts_Eligible) * 100)
+```
+
+![](images/05_coverage.png){width="1500"}
+:::
+:::::
 
 ------------------------------------------------------------------------
 
-**9) Analysis 1 - part 3**
-
-(linear models for drug resistance and mortality in the countries. Maybe also include the stuff on detection rate).
+**9) Analysis on data from 2015 to 2024:**
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
-
-
 ```{r 9_1, echo=TRUE, eval=FALSE}
 TB_10_years_joined |>
   ggplot(aes(x=(rr_incidence/e_pop_num*10^5),y=e_mort_100k, color=g_whoregion.x)) +
@@ -280,12 +328,10 @@ TB_10_years_joined |>
   theme_minimal()
 ```
 
-![](../results/05_analysis_relationship_RRTB_Mortality.png)
+![](images/05_analysis_relationship_RRTB_Mortality.png)
 :::
 
 ::: {.column width="50%" style="font-size: 0.9em"}
-
-
 ```{r 9_2, echo=TRUE, eval=FALSE}
 TB_10_years_joined |>
 mutate(
@@ -307,10 +353,7 @@ labs(
   theme_minimal()
 ```
 
-Another test image:
-
-![](../results/05_analysis_mortality_cases_per_100k)
-
+![](images/05_analysis_mortality_cases_per_100k.png)
 :::
 :::::
 
