@@ -102,16 +102,19 @@ TB_age_sex <- TB_age_sex |>
 
 :::
 
-
 :::::
 
 ------------------------------------------------------------------------
 
 **4) Analysis - 2024 dataset - TB + Risk factor distribution**
 
+::::: columns
+
+::: {.column width="50%" style="font-size: 0.9em"}
+
 **Bar chart - TB + Risk factor cases in the top 10 most TB burdened countries:**
 
-``` r
+``` {r 4_1, echo=TRUE, eval=FALSE}
 #Code for making the plot of the TB + risk factor cases:
 TB_age_sex |>
   filter(country %in% top_10_countries_100k) |>
@@ -128,11 +131,14 @@ TB_age_sex |>
   ) #... followed by ggplot
 ```
 
-::: column-margin
 **Bar chart of the risk factor distribution:** **(Without the 'no risk factor' label)**
 
-![](../results/06_1_riskfactor_barchart.png){width="100"}
+![](../results/06_1_riskfactor_barchart.png){width="2000"}
+
 :::
+
+
+::: {.column width="50%" style="font-size: 0.9em"}
 
 **Box plots of the global risk factor distribution:**
 
@@ -152,13 +158,17 @@ TB_age_sex |>
   ) #... followed by ggplot
 ```
 
-::: column-margin
-**Box plot:**
+**Box plot of TB + risk factor cases, globally:**
+![](../results/06_2_riskfactor_boxplot.png){width="2000"}
 
-![](../results/06_2_riskfactor_boxplot.png){width="100"}
 :::
 
+
+::::: 
+
+
 ------------------------------------------------------------------------
+
 
 **5) Analysis 2 - part 1**
 

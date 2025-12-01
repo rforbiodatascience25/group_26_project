@@ -476,8 +476,11 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <section class="slide level2">
 
 <p><strong>4) Analysis - 2024 dataset - TB + Risk factor distribution</strong></p>
+<div class="columns">
+<div class="column" style="font-size: 0.9em">
 <p><strong>Bar chart - TB + Risk factor cases in the top 10 most TB burdened countries:</strong></p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href=""></a><span class="co">#Code for making the plot of the TB + risk factor cases:</span></span>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href=""></a><span class="co">#Code for making the plot of the TB + risk factor cases:</span></span>
 <span id="cb4-2"><a href=""></a>TB_age_sex <span class="sc">|&gt;</span></span>
 <span id="cb4-3"><a href=""></a>  <span class="fu">filter</span>(country <span class="sc">%in%</span> top_10_countries_100k) <span class="sc">|&gt;</span></span>
 <span id="cb4-4"><a href=""></a>  <span class="fu">group_by</span>(country, risk_factor) <span class="sc">|&gt;</span></span>
@@ -491,10 +494,10 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <span id="cb4-12"><a href=""></a>    <span class="at">TB_cases_min_100k =</span> TB_cases_min<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
 <span id="cb4-13"><a href=""></a>    <span class="at">TB_cases_max_100k =</span> TB_cases_max<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
 <span id="cb4-14"><a href=""></a>  ) <span class="co">#... followed by ggplot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="column-margin">
-<p><strong>Bar chart of the risk factor distribution:</strong> <strong>(Without the ‘no risk factor’ label)</strong></p>
-<p><img data-src="../results/06_1_riskfactor_barchart.png" width="100"></p>
 </div>
+<p><strong>Bar chart of the risk factor distribution:</strong> <strong>(Without the ‘no risk factor’ label)</strong></p>
+<p><img data-src="../results/06_1_riskfactor_barchart.png" width="2000"></p>
+</div><div class="column" style="font-size: 0.9em">
 <p><strong>Box plots of the global risk factor distribution:</strong></p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href=""></a>TB_age_sex <span class="sc">|&gt;</span></span>
 <span id="cb5-2"><a href=""></a>  <span class="fu">group_by</span>(country, risk_factor) <span class="sc">|&gt;</span></span>
@@ -509,10 +512,8 @@ Henrik (s215065), Felipe (s252623), Lun (s253705),Bhavya (s252641), Dhruva (s225
 <span id="cb5-11"><a href=""></a>    <span class="at">TB_cases_min_100k =</span> TB_cases_min<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
 <span id="cb5-12"><a href=""></a>    <span class="at">TB_cases_max_100k =</span> TB_cases_max<span class="sc">/</span>population_size<span class="sc">*</span><span class="dv">10</span><span class="sc">^</span><span class="dv">5</span>,</span>
 <span id="cb5-13"><a href=""></a>  ) <span class="co">#... followed by ggplot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="column-margin">
-<p><strong>Box plot:</strong></p>
-<p><img data-src="../results/06_2_riskfactor_boxplot.png" width="100"></p>
-</div>
+<p><strong>Box plot of TB + risk factor cases, globally:</strong> <img data-src="../results/06_2_riskfactor_boxplot.png" width="2000"></p>
+</div></div>
 </section>
 <section class="slide level2">
 
