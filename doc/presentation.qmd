@@ -41,7 +41,7 @@ format:
 
 ------------------------------------------------------------------------
 
-**3) Augmenting the data - standardardized (pr. 100k) vs normal**
+**3) Augmenting the data - Standardardized (pr. 100k) vs normal**
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -260,7 +260,7 @@ TB_age_sex |>
 
 ------------------------------------------------------------------------
 
-**7) Analysis 1 - part 1**
+**7) Analysis - Global TB evolution**
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -282,7 +282,7 @@ geom_polygon(aes(fill = Preventive_Tx_Pct)
 
 ------------------------------------------------------------------------
 
-**8) Analysis 1 - part 2**
+**8) Analysis - TB Preventive care data**
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
@@ -334,11 +334,11 @@ global_trends <- df_clean |>
 
 ------------------------------------------------------------------------
 
-**9) Analysis on data from 2015 to 2024:**
+**9) Analysis - RR-TB and HIV (2015 - 2024):**
 
 ::::: columns
 ::: {.column width="50%" style="font-size: 0.9em"}
-**Scatter plot with linear regresion per country:**
+**Scatter plot with linear regresion per region:**
 
 ```{r 9_1, echo=TRUE, eval=FALSE}
 TB_10_years_joined |>
