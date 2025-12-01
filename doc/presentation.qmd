@@ -10,21 +10,28 @@ format:
     footer: ""
     css: styles.css
     code-font-size: "0.7em"
+    embed-resources: true
 ---
 
-**1) Introduction to the data**
+## Introduction {.smaller-subtitle}
 
-##### WHO Data
+### Epidemiological datasets (WHO 2024–2025) {.subtitle}
+:::{.large}
+- TB burden estimates (mortality, incidence, CFR, diagnosis & treatment coverage)
+- Disaggregated incidence by age, sex, HIV status, and risk factors
+- MDR/RR-TB burden (drug-resistant TB)
+- Household contact TB infection & preventive treatment estimates
+:::
 
-TB mortality and incidence (by age, sex, HIV status, risk factors, drug resistance)
+### Project questions {.subtitle}
+:::{.large}
+- How do global TB incidence trends compare with the situation in 2024?
+- What is the relationship between TB, HIV co-infection, and antimicrobial resistance?
+- Narrow down on more vulnerable demographic groups and countries.
+:::
 
-Disaggregated incidence by age group, sex, and risk factors
 
-MDR/RR-TB burden estimates
 
-TB infection estimates in household contacts
-
-##### Our Project Focus
 
 ------------------------------------------------------------------------
 
