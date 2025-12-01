@@ -159,11 +159,42 @@ TB_age_sex |>
 ![](../results/06_2_riskfactor_boxplot.png){width="100"}
 :::
 
+
 ------------------------------------------------------------------------
 
 **5) Analysis 2 - part 1**
 
 (E.g. global cases)
+
+::::: columns
+
+::: {.column width="50%" style="font-size: 0.9em"}
+test
+
+```{r test1, echo=TRUE, eval=FALSE}
+#test
+```
+
+![](placeholder_image.png)
+:::
+
+::: {.column width="50%" style="font-size: 0.9em"}
+test
+
+```{r test2, echo=TRUE, eval=FALSE}
+#test
+```
+
+
+Another test image: 
+
+![](placeholder_image.png)
+
+:::
+
+
+:::::
+
 
 ------------------------------------------------------------------------
 
