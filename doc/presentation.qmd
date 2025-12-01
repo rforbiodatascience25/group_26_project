@@ -151,7 +151,9 @@ TB_age_sex |>
   ) #... followed by ggplot
 ```
 
-**Box plot of TB + risk factor cases, globally:** ![](images/06_2_riskfactor_boxplot.png){width="2000"}
+**Box plot of TB + risk factor cases, globally:** 
+
+![](images/06_2_riskfactor_boxplot.png){width="2000"}
 :::
 :::::
 
